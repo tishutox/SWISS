@@ -16,8 +16,15 @@
    align-items: center;
 
    &__logo{
+      display: inline-flex;
+      align-items: center;
       color: var(--white-color);
       font-weight: var(--font-medium);
+   }
+   &__logo-img{
+      display: block;
+      height: 2.5rem;
+      width: auto;
    }
    &__close,
    &__toggle{

@@ -82,8 +82,16 @@ a {
 }
 
 .nav__logo {
+  display: inline-flex;
+  align-items: center;
   color: var(--white-color);
   font-weight: var(--font-medium);
+}
+
+.nav__logo-img {
+  display: block;
+  height: 2.5rem;
+  width: auto;
 }
 
 .nav__close, 
