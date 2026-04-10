@@ -137,3 +137,113 @@
    visibility: visible;
    transform: translateX(0);
 }
+
+/*=============== LOGIN MODAL ===============*/
+.auth-modal{
+   position: fixed;
+   inset: 0;
+   z-index: calc(var(--z-fixed) + 10);
+   opacity: 0;
+   pointer-events: none;
+   transition: opacity .3s;
+
+   &__backdrop{
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .75);
+   }
+
+   &__panel{
+      position: relative;
+      z-index: 1;
+      min-height: 100dvh;
+      width: 100%;
+      background: linear-gradient(180deg, #0a0a0a 0%, #171717 100%);
+      color: var(--white-color);
+      padding: 5.5rem 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1rem;
+   }
+
+   &__close{
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      border: 0;
+      background: transparent;
+      color: var(--white-color);
+      font-size: 1.5rem;
+      cursor: pointer;
+   }
+
+   &__title{
+      font-size: 1.4rem;
+      letter-spacing: .08em;
+   }
+
+   &__subtitle{
+      color: rgba(255, 255, 255, .75);
+      margin-bottom: .75rem;
+   }
+
+   &__form{
+      width: min(100%, 30rem);
+      display: grid;
+      gap: .75rem;
+   }
+
+   &__field{
+      font-size: .85rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+   }
+
+   &__input{
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, .25);
+      background-color: rgba(255, 255, 255, .08);
+      color: var(--white-color);
+      padding: .85rem 1rem;
+      font-size: 1rem;
+      border-radius: .4rem;
+
+      &:focus{
+         outline: 2px solid rgba(255, 255, 255, .45);
+         outline-offset: 1px;
+      }
+   }
+
+   &__message{
+      min-height: 1.25rem;
+      font-size: .9rem;
+      color: #ffb4b4;
+   }
+
+   &__message--success{
+      color: #a3f3ba;
+   }
+
+   &__submit{
+      margin-top: .25rem;
+      border: 0;
+      background-color: var(--white-color);
+      color: var(--black-color);
+      font-weight: var(--font-medium);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: .85rem 1rem;
+      border-radius: .4rem;
+      cursor: pointer;
+   }
+}
+
+.show-auth-modal{
+   opacity: 1;
+   pointer-events: auto;
+}
+
+.modal-open{
+   overflow: hidden;
+}

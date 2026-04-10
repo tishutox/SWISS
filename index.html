@@ -35,7 +35,7 @@
                   </li>
 
                   <li class="nav__item">
-                     <a href="#" class="nav__link">
+                     <a href="#" class="nav__link" id="nav-login">
                         <span>Anmelden</span>
                      </a>
                   </li>
@@ -64,6 +64,46 @@
       <main>
          <!-- Insert page sections -->
       </main>
+
+      <!--==================== LOGIN MODAL ====================-->
+      <div class="auth-modal" id="auth-modal" aria-hidden="true">
+         <div class="auth-modal__backdrop" data-auth-close></div>
+
+         <section class="auth-modal__panel" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+            <button type="button" class="auth-modal__close" id="auth-close" aria-label="Login schliessen">
+               <i class="ri-close-large-line"></i>
+            </button>
+
+            <h2 class="auth-modal__title" id="auth-title">ANMELDEN</h2>
+            <p class="auth-modal__subtitle">Mit Nutzername oder E-Mail und Passwort einloggen.</p>
+
+            <form class="auth-modal__form" id="auth-form" novalidate>
+               <label class="auth-modal__field" for="auth-identifier">Nutzername oder E-Mail</label>
+               <input
+                  class="auth-modal__input"
+                  id="auth-identifier"
+                  name="identifier"
+                  type="text"
+                  autocomplete="username"
+                  required
+               >
+
+               <label class="auth-modal__field" for="auth-password">Passwort</label>
+               <input
+                  class="auth-modal__input"
+                  id="auth-password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+               >
+
+               <p class="auth-modal__message" id="auth-message" aria-live="polite"></p>
+
+               <button type="submit" class="auth-modal__submit">ANMELDEN</button>
+            </form>
+         </section>
+      </div>
       
       <!--=============== MAIN JS ===============-->
       <script src="assets/js/main.js"></script>

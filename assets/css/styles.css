@@ -208,11 +208,133 @@ a {
   transform: translateX(0);
 }
 
+/*=============== LOGIN MODAL ===============*/
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-fixed) + 10);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+
+.auth-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .75);
+}
+
+.auth-modal__panel {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  width: 100%;
+  background: linear-gradient(180deg, #0a0a0a 0%, #171717 100%);
+  color: var(--white-color);
+  padding: 5.5rem 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.auth-modal__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--white-color);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.auth-modal__title {
+  font-size: 1.4rem;
+  letter-spacing: .08em;
+}
+
+.auth-modal__subtitle {
+  color: rgba(255, 255, 255, .75);
+  margin-bottom: .75rem;
+}
+
+.auth-modal__form {
+  width: min(100%, 30rem);
+  display: grid;
+  gap: .75rem;
+}
+
+.auth-modal__field {
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.auth-modal__input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, .25);
+  background-color: rgba(255, 255, 255, .08);
+  color: var(--white-color);
+  padding: .85rem 1rem;
+  font-size: 1rem;
+  border-radius: .4rem;
+}
+
+.auth-modal__input:focus {
+  outline: 2px solid rgba(255, 255, 255, .45);
+  outline-offset: 1px;
+}
+
+.auth-modal__message {
+  min-height: 1.25rem;
+  font-size: .9rem;
+  color: #ffb4b4;
+}
+
+.auth-modal__message--success {
+  color: #a3f3ba;
+}
+
+.auth-modal__submit {
+  margin-top: .25rem;
+  border: 0;
+  background-color: var(--white-color);
+  color: var(--black-color);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  padding: .85rem 1rem;
+  border-radius: .4rem;
+  cursor: pointer;
+}
+
+.show-auth-modal {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-open {
+  overflow: hidden;
+}
+
 /*=============== BREAKPOINTS ===============*/
 /* For large devices */
 @media screen and (min-width: 1150px) {
   .container {
     margin-inline: auto;
+  }
+
+  .auth-modal {
+    display: grid;
+    place-items: center;
+  }
+
+  .auth-modal__panel {
+    min-height: auto;
+    width: min(100%, 34rem);
+    border-radius: .75rem;
+    padding: 3.5rem 2.5rem 2.25rem;
   }
 
   .nav {

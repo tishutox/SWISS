@@ -5,6 +5,18 @@
       margin-inline: auto;
    }
 
+   .auth-modal{
+      display: grid;
+      place-items: center;
+
+      &__panel{
+         min-height: auto;
+         width: min(100%, 34rem);
+         border-radius: .75rem;
+         padding: 3.5rem 2.5rem 2.25rem;
+      }
+   }
+
    .nav{
       height: calc(var(--header-height) + 2rem);
 
