@@ -50,6 +50,9 @@
                   <a href="https://github.com/tishutox/SWISS" target="_blank" class="nav__social-link">
                      <i class="ri-github-line"></i>
                   </a>
+                  <a href="https://discord.gg/xGUG987wKw" target="_blank" rel="noopener noreferrer" class="nav__social-link" aria-label="Discord Community">
+                     <i class="ri-discord-line"></i>
+                  </a>
                </div>
             </div>
 
@@ -176,7 +179,8 @@
                </select>
 
                <label class="ticket-modal__field" for="ticket-deadline">DEADLINE (optional)</label>
-               <input class="ticket-modal__input" id="ticket-deadline" name="deadline" type="date">
+               <input class="ticket-modal__input" id="ticket-deadline" name="deadline" type="text" inputmode="numeric" placeholder="TT/MM/JJJJ" pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/([0-9]{4})$" maxlength="10">
+               <p class="ticket-modal__counter" data-counter-for="ticket-deadline" aria-live="polite">0/10</p>
 
                <label class="ticket-modal__field" for="ticket-assignment">Zuweisung</label>
                <select class="ticket-modal__input" id="ticket-assignment" name="assignment">
