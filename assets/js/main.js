@@ -26,6 +26,8 @@ const loginOpen = document.getElementById('nav-login'),
       authIdentifier = document.getElementById('auth-identifier'),
       authPassword = document.getElementById('auth-password')
 
+let currentUser = null
+
 const users = [
    {
       firstName: 'Armand Patrick',
@@ -42,6 +44,15 @@ const users = [
       password: 'vX4&zN6@wF1?cJ'
    }
 ]
+
+const updateAuthButton = () => {
+   if(!loginOpen) return
+
+   const label = loginOpen.querySelector('span')
+   if(!label) return
+
+   label.textContent = currentUser ? 'Abmelden' : 'Anmelden'
+}
 
 const openAuthModal = () => {
    if(!authModal) return
@@ -70,6 +81,19 @@ const closeAuthModal = () => {
 if(loginOpen){
    loginOpen.addEventListener('click', (event) => {
       event.preventDefault()
+
+      if(currentUser){
+         currentUser = null
+         authForm?.reset()
+         if(authMessage){
+            authMessage.textContent = ''
+            authMessage.classList.remove('auth-modal__message--success')
+         }
+         closeAuthModal()
+         updateAuthButton()
+         return
+      }
+
       openAuthModal()
    })
 }
@@ -105,9 +129,12 @@ if(authForm){
       })
 
       if(matchedUser){
+         currentUser = matchedUser
          authMessage.textContent = `Erfolgreich angemeldet: ${matchedUser.firstName} ${matchedUser.lastName}`
          authMessage.classList.add('auth-modal__message--success')
          authForm.reset()
+         updateAuthButton()
+         closeAuthModal()
          return
       }
 
@@ -115,3 +142,5 @@ if(authForm){
       authMessage.classList.remove('auth-modal__message--success')
    })
 }
+
+updateAuthButton()
