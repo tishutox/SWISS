@@ -243,6 +243,35 @@ main {
   padding-bottom: 2rem;
 }
 
+.ticket-board__pull-indicator {
+  position: fixed;
+  left: 50%;
+  top: calc(var(--header-height) + .25rem);
+  transform: translate(-50%, -120%);
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 999px;
+  background-color: rgba(20, 20, 20, .9);
+  color: rgba(255, 255, 255, .85);
+  padding: .38rem .85rem;
+  display: inline-flex;
+  gap: .45rem;
+  align-items: center;
+  font-size: .78rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform .15s ease, opacity .15s ease;
+  z-index: calc(var(--z-fixed) + 2);
+}
+
+.ticket-board__pull-indicator--visible {
+  opacity: 1;
+}
+
+.ticket-board__pull-indicator--ready {
+  color: var(--white-color);
+  border-color: rgba(255, 255, 255, .45);
+}
+
 .ticket-board__column {
   border: 1px solid rgba(255, 255, 255, .16);
   border-radius: .75rem;

@@ -24,6 +24,7 @@ const loginOpen = document.getElementById('nav-login'),
    allTicketsLink = document.getElementById('nav-all-tickets'),
    homeContent = document.getElementById('home-content'),
    adminTicketBoard = document.getElementById('admin-ticket-board'),
+   boardPullIndicator = document.getElementById('board-pull-indicator'),
    ticketColumnOffen = document.getElementById('ticket-column-offen'),
    ticketColumnInBearbeitung = document.getElementById('ticket-column-in-bearbeitung'),
    ticketColumnErledigt = document.getElementById('ticket-column-erledigt'),
@@ -61,6 +62,10 @@ let boardViewActive = false
 let activeTicketId = null
 let editingTicketId = null
 let ticketsCache = []
+let isPullingBoard = false
+let boardPullStartY = 0
+let boardPullDistance = 0
+let isBoardRefreshing = false
 
 const SUPABASE_URL = 'https://vuqrjvnitgmigykrkpfj.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1cXJqdm5pdGdtaWd5a3JrcGZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzI4MzUsImV4cCI6MjA4ODkwODgzNX0.necblqCSqzKv2shs9SuO6Qr3ys-TU4DS4tYNUKHAvvk'
@@ -633,6 +638,90 @@ const showHomeView = () => {
    homeContent?.removeAttribute('hidden')
    adminTicketBoard?.setAttribute('hidden', 'true')
    allTicketsLink?.querySelector('span')?.replaceChildren('Alle Tickets')
+}
+
+const setBoardPullIndicator = (distance, ready = false, text = 'Ziehen zum Aktualisieren') => {
+   if(!boardPullIndicator) return
+
+   const clamped = Math.min(distance, 90)
+   boardPullIndicator.classList.add('ticket-board__pull-indicator--visible')
+   boardPullIndicator.classList.toggle('ticket-board__pull-indicator--ready', ready)
+   boardPullIndicator.style.transform = `translate(-50%, ${-120 + clamped}%)`
+
+   const label = boardPullIndicator.querySelector('span')
+   if(label){
+      label.textContent = text
+   }
+}
+
+const resetBoardPullIndicator = () => {
+   if(!boardPullIndicator) return
+
+   boardPullIndicator.classList.remove('ticket-board__pull-indicator--visible', 'ticket-board__pull-indicator--ready')
+   boardPullIndicator.style.transform = 'translate(-50%, -120%)'
+
+   const label = boardPullIndicator.querySelector('span')
+   if(label){
+      label.textContent = 'Ziehen zum Aktualisieren'
+   }
+}
+
+const initializeBoardPullToRefresh = () => {
+   const refreshThreshold = 70
+
+   window.addEventListener('touchstart', (event) => {
+      if(!boardViewActive || !currentUser?.isAdmin || isBoardRefreshing) return
+      if(document.body.classList.contains('modal-open')) return
+      if(window.scrollY > 0) return
+
+      boardPullStartY = event.touches[0].clientY
+      boardPullDistance = 0
+      isPullingBoard = true
+   }, { passive: true })
+
+   window.addEventListener('touchmove', (event) => {
+      if(!isPullingBoard || !boardViewActive || !currentUser?.isAdmin || isBoardRefreshing) return
+
+      const currentY = event.touches[0].clientY
+      const delta = currentY - boardPullStartY
+      boardPullDistance = Math.max(0, delta)
+
+      if(boardPullDistance <= 0 || window.scrollY > 0){
+         resetBoardPullIndicator()
+         return
+      }
+
+      const isReady = boardPullDistance >= refreshThreshold
+      setBoardPullIndicator(boardPullDistance, isReady, isReady ? 'Loslassen zum Aktualisieren' : 'Ziehen zum Aktualisieren')
+      event.preventDefault()
+   }, { passive: false })
+
+   window.addEventListener('touchend', async () => {
+      if(!isPullingBoard) return
+
+      const shouldRefresh = boardViewActive
+         && currentUser?.isAdmin
+         && !isBoardRefreshing
+         && boardPullDistance >= refreshThreshold
+
+      isPullingBoard = false
+
+      if(!shouldRefresh){
+         resetBoardPullIndicator()
+         return
+      }
+
+      isBoardRefreshing = true
+      setBoardPullIndicator(refreshThreshold, true, 'Aktualisiere...')
+      await renderTicketBoard()
+      isBoardRefreshing = false
+      resetBoardPullIndicator()
+   }, { passive: true })
+
+   window.addEventListener('touchcancel', () => {
+      isPullingBoard = false
+      resetBoardPullIndicator()
+   }, { passive: true })
 }
 
 const fillTicketDetail = (ticket) => {
@@ -1500,6 +1589,7 @@ if(ticketForm){
 populateCountryCodeSelect()
 initializeLengthCounters()
 initializeDeadlineInput()
+initializeBoardPullToRefresh()
 setTicketFormMode(false)
 showHomeView()
 updateAuthButton()
