@@ -60,8 +60,12 @@ let currentUser = null
 let boardViewActive = false
 let activeTicketId = null
 let editingTicketId = null
+let ticketsCache = []
 
-const TICKETS_STORAGE_KEY = 'swiss_tickets'
+const SUPABASE_URL = 'https://vuqrjvnitgmigykrkpfj.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1cXJqdm5pdGdtaWd5a3JrcGZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzI4MzUsImV4cCI6MjA4ODkwODgzNX0.necblqCSqzKv2shs9SuO6Qr3ys-TU4DS4tYNUKHAvvk'
+const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
 const TICKET_STATUS_OPEN = 'offen'
 const TICKET_STATUS_IN_PROGRESS = 'in-bearbeitung'
 const TICKET_STATUS_DONE = 'erledigt'
@@ -598,11 +602,12 @@ const renderColumn = (columnElement, tickets) => {
    })
 }
 
-const renderTicketBoard = () => {
+const renderTicketBoard = async () => {
    if(!currentUser?.isAdmin || !boardViewActive){
       return
    }
 
+   await loadTicketsFromDatabase()
    const storedTickets = sortNewestFirst(getStoredTickets())
 
    const openTickets = storedTickets.filter((ticket) => ticket.status === TICKET_STATUS_OPEN)
@@ -614,13 +619,13 @@ const renderTicketBoard = () => {
    renderColumn(ticketColumnErledigt, doneTickets)
 }
 
-const showBoardView = () => {
+const showBoardView = async () => {
    if(!currentUser?.isAdmin) return
    boardViewActive = true
    homeContent?.setAttribute('hidden', 'true')
    adminTicketBoard?.removeAttribute('hidden')
    allTicketsLink?.querySelector('span')?.replaceChildren('STARTSEITE')
-   renderTicketBoard()
+   await renderTicketBoard()
 }
 
 const showHomeView = () => {
@@ -715,21 +720,125 @@ const fillTicketFormForEdit = (ticket) => {
    ticketForm.querySelectorAll('[maxlength]').forEach(syncLengthCounter)
 }
 
-const getStoredTickets = () => {
-   try{
-      const rawTickets = localStorage.getItem(TICKETS_STORAGE_KEY)
-      if(!rawTickets) return []
+const mapDbTicketToApp = (row) => {
+   return normalizeTicket({
+      ticketId: row.ticket_id,
+      createdAt: row.created_at,
+      createdDate: row.created_date,
+      createdTime: row.created_time,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      nickName: row.nick_name,
+      email: row.email,
+      phoneCountryCode: row.phone_country_code,
+      phoneNumber: row.phone_number,
+      phoneNumberFull: row.phone_number_full,
+      discord: row.discord,
+      module: row.module,
+      title: row.title,
+      message: row.message,
+      priority: row.priority,
+      deadline: row.deadline,
+      assignment: row.assignment,
+      status: row.status,
+      updatedAt: row.updated_at
+   })
+}
 
-      const parsedTickets = JSON.parse(rawTickets)
-      return Array.isArray(parsedTickets) ? parsedTickets.map(normalizeTicket) : []
-   }
-   catch{
-      return []
+const mapAppTicketToDb = (ticket) => {
+   return {
+      ticket_id: ticket.ticketId,
+      created_at: ticket.createdAt,
+      created_date: ticket.createdDate,
+      created_time: ticket.createdTime,
+      first_name: ticket.firstName,
+      last_name: ticket.lastName,
+      nick_name: ticket.nickName,
+      email: ticket.email,
+      phone_country_code: ticket.phoneCountryCode,
+      phone_number: ticket.phoneNumber,
+      phone_number_full: ticket.phoneNumberFull,
+      discord: ticket.discord,
+      module: ticket.module,
+      title: ticket.title,
+      message: ticket.message,
+      priority: ticket.priority,
+      deadline: ticket.deadline,
+      assignment: ticket.assignment,
+      status: ticket.status,
+      updated_at: ticket.updatedAt || null
    }
 }
 
-const saveStoredTickets = (tickets) => {
-   localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets))
+const getStoredTickets = () => {
+   return ticketsCache.map(normalizeTicket)
+}
+
+const loadTicketsFromDatabase = async () => {
+   if(!supabaseClient) return getStoredTickets()
+
+   const { data, error } = await supabaseClient
+      .from('tickets')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+   if(error){
+      console.error('Supabase Fehler beim Laden der Tickets:', error.message)
+      return getStoredTickets()
+   }
+
+   ticketsCache = (data || []).map(mapDbTicketToApp)
+   return getStoredTickets()
+}
+
+const createTicketInDatabase = async (ticket) => {
+   if(!supabaseClient) return false
+
+   const { error } = await supabaseClient
+      .from('tickets')
+      .insert(mapAppTicketToDb(ticket))
+
+   if(error){
+      console.error('Supabase Fehler beim Erstellen:', error.message)
+      return false
+   }
+
+   return true
+}
+
+const updateTicketInDatabase = async (ticketId, patch) => {
+   if(!supabaseClient) return false
+
+   const dbPatch = {}
+
+   if(Object.hasOwn(patch, 'firstName')) dbPatch.first_name = patch.firstName
+   if(Object.hasOwn(patch, 'lastName')) dbPatch.last_name = patch.lastName
+   if(Object.hasOwn(patch, 'nickName')) dbPatch.nick_name = patch.nickName
+   if(Object.hasOwn(patch, 'email')) dbPatch.email = patch.email
+   if(Object.hasOwn(patch, 'phoneCountryCode')) dbPatch.phone_country_code = patch.phoneCountryCode
+   if(Object.hasOwn(patch, 'phoneNumber')) dbPatch.phone_number = patch.phoneNumber
+   if(Object.hasOwn(patch, 'phoneNumberFull')) dbPatch.phone_number_full = patch.phoneNumberFull
+   if(Object.hasOwn(patch, 'discord')) dbPatch.discord = patch.discord
+   if(Object.hasOwn(patch, 'module')) dbPatch.module = patch.module
+   if(Object.hasOwn(patch, 'title')) dbPatch.title = patch.title
+   if(Object.hasOwn(patch, 'message')) dbPatch.message = patch.message
+   if(Object.hasOwn(patch, 'priority')) dbPatch.priority = patch.priority
+   if(Object.hasOwn(patch, 'deadline')) dbPatch.deadline = patch.deadline
+   if(Object.hasOwn(patch, 'assignment')) dbPatch.assignment = patch.assignment
+   if(Object.hasOwn(patch, 'status')) dbPatch.status = patch.status
+   if(Object.hasOwn(patch, 'updatedAt')) dbPatch.updated_at = patch.updatedAt
+
+   const { error } = await supabaseClient
+      .from('tickets')
+      .update(dbPatch)
+      .eq('ticket_id', ticketId)
+
+   if(error){
+      console.error('Supabase Fehler beim Aktualisieren:', error.message)
+      return false
+   }
+
+   return true
 }
 
 const populateCountryCodeSelect = () => {
@@ -1102,7 +1211,7 @@ if(ticketOpen){
 }
 
 if(allTicketsLink){
-   allTicketsLink.addEventListener('click', (event) => {
+   allTicketsLink.addEventListener('click', async (event) => {
       event.preventDefault()
       if(!currentUser?.isAdmin) return
 
@@ -1110,7 +1219,7 @@ if(allTicketsLink){
          showHomeView()
       }
       else{
-         showBoardView()
+         await showBoardView()
       }
    })
 }
@@ -1160,20 +1269,24 @@ if(ticketDetailClose){
 }
 
 if(ticketDetailEdit){
-   ticketDetailEdit.addEventListener('click', () => {
-   if(!currentUser?.isAdmin || !boardViewActive) return
+   ticketDetailEdit.addEventListener('click', async () => {
+      if(!currentUser?.isAdmin || !boardViewActive) return
+
+      await loadTicketsFromDatabase()
 
       const tickets = getStoredTickets()
       const ticketIndex = tickets.findIndex((entry) => Number(entry.ticketId) === Number(activeTicketId))
       if(ticketIndex === -1) return
 
-      tickets[ticketIndex] = {
-         ...tickets[ticketIndex],
-         status: TICKET_STATUS_IN_PROGRESS
-      }
-      saveStoredTickets(tickets)
+      const statusUpdated = await updateTicketInDatabase(tickets[ticketIndex].ticketId, {
+         status: TICKET_STATUS_IN_PROGRESS,
+         updatedAt: new Date().toISOString()
+      })
+      if(!statusUpdated) return
 
-      const ticket = tickets[ticketIndex]
+      await loadTicketsFromDatabase()
+
+      const ticket = getStoredTickets().find((entry) => Number(entry.ticketId) === Number(activeTicketId))
       if(!ticket) return
 
       editingTicketId = ticket.ticketId
@@ -1185,22 +1298,25 @@ if(ticketDetailEdit){
 }
 
 if(ticketDetailComplete){
-   ticketDetailComplete.addEventListener('click', () => {
-   if(!currentUser?.isAdmin || !boardViewActive) return
+   ticketDetailComplete.addEventListener('click', async () => {
+      if(!currentUser?.isAdmin || !boardViewActive) return
+
+      await loadTicketsFromDatabase()
 
       const tickets = getStoredTickets()
       const ticketIndex = tickets.findIndex((entry) => Number(entry.ticketId) === Number(activeTicketId))
       if(ticketIndex === -1) return
 
-      tickets[ticketIndex] = {
-         ...tickets[ticketIndex],
-         status: TICKET_STATUS_DONE
-      }
+      const doneUpdated = await updateTicketInDatabase(tickets[ticketIndex].ticketId, {
+         status: TICKET_STATUS_DONE,
+         updatedAt: new Date().toISOString()
+      })
+      if(!doneUpdated) return
 
-      saveStoredTickets(tickets)
+      await loadTicketsFromDatabase()
       closeTicketDetailModal()
       if(boardViewActive){
-         renderTicketBoard()
+         await renderTicketBoard()
       }
    })
 }
@@ -1249,7 +1365,7 @@ if(authForm){
 }
 
 if(ticketForm){
-   ticketForm.addEventListener('submit', (event) => {
+   ticketForm.addEventListener('submit', async (event) => {
       event.preventDefault()
 
       ticketEmail?.setCustomValidity('')
@@ -1286,12 +1402,15 @@ if(ticketForm){
          return
       }
 
+      await loadTicketsFromDatabase()
       const storedTickets = getStoredTickets()
       const now = new Date()
       const formData = new FormData(ticketForm)
       const nextTicketId = getNextTicketId(storedTickets)
       const phoneCountryCode = formData.get('phoneCountryCode')?.toString() || '+49'
       const phoneNumber = formData.get('phoneNumber')?.toString().trim() || ''
+
+      let savedSuccessfully = false
 
       const baseTicketData = {
          createdAt: now.toISOString(),
@@ -1321,7 +1440,7 @@ if(ticketForm){
          const ticketIndex = storedTickets.findIndex((ticket) => Number(ticket.ticketId) === Number(editingTicketId))
 
          if(ticketIndex !== -1){
-            storedTickets[ticketIndex] = {
+            const updatedTicket = {
                ...storedTickets[ticketIndex],
                ...baseTicketData,
                ticketId: storedTickets[ticketIndex].ticketId,
@@ -1331,17 +1450,29 @@ if(ticketForm){
                status: storedTickets[ticketIndex].status || TICKET_STATUS_OPEN,
                updatedAt: now.toISOString()
             }
+
+            savedSuccessfully = await updateTicketInDatabase(updatedTicket.ticketId, updatedTicket)
          }
       }
       else{
-         storedTickets.push({
+         const newTicket = {
             ticketId: nextTicketId,
             ...baseTicketData,
             status: TICKET_STATUS_OPEN
-         })
+         }
+
+         savedSuccessfully = await createTicketInDatabase(newTicket)
       }
 
-      saveStoredTickets(storedTickets)
+      if(!savedSuccessfully){
+         if(ticketMessage){
+            ticketMessage.textContent = 'Speichern fehlgeschlagen. Bitte Supabase-Verbindung und Policies prüfen.'
+            ticketMessage.classList.remove('ticket-modal__message--success')
+         }
+         return
+      }
+
+      await loadTicketsFromDatabase()
 
       if(ticketMessage){
          ticketMessage.textContent = editingTicketId
@@ -1357,7 +1488,7 @@ if(ticketForm){
       closeTicketModal()
 
       if(boardViewActive){
-         renderTicketBoard()
+         await renderTicketBoard()
       }
    })
 }
@@ -1368,3 +1499,5 @@ initializeDeadlineInput()
 setTicketFormMode(false)
 showHomeView()
 updateAuthButton()
+
+loadTicketsFromDatabase()
