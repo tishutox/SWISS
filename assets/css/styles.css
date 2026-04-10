@@ -933,3 +933,76 @@ main {
     grid-template-columns: 1fr;
   }
 }
+
+/*=============== MONOCHROME OVERRIDES ===============*/
+body,
+.home__container,
+.auth-session-note,
+.ticket-board__column,
+.ticket-card,
+.ticket-card:hover,
+.ticket-detail-modal__panel,
+.auth-modal__panel,
+.ticket-modal__panel,
+.ticket-board__pull-indicator,
+.ticket-modal__calendar,
+.ticket-modal__calendar-day,
+.ticket-modal__calendar-day:hover,
+.ticket-modal__calendar-day:disabled,
+.ticket-modal__calendar-day--selected,
+.ticket-detail-modal__button,
+.ticket-detail-modal__button--primary,
+.auth-modal__submit,
+.ticket-modal__submit,
+.ticket-modal__deadline-button,
+.ticket-modal__calendar-nav,
+.ticket-modal__input,
+.auth-modal__input {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+.ticket-board__column,
+.home__container,
+.auth-session-note,
+.ticket-card,
+.ticket-board__empty,
+.ticket-detail-modal__row,
+.ticket-detail-modal__button,
+.ticket-detail-modal__button--primary,
+.auth-modal__submit,
+.ticket-modal__submit,
+.ticket-modal__deadline-button,
+.ticket-modal__calendar,
+.ticket-modal__calendar-day,
+.ticket-modal__calendar-nav,
+.ticket-modal__input,
+.auth-modal__input,
+.ticket-board__pull-indicator,
+.ticket-card__status {
+  border-color: #fff !important;
+}
+
+.ticket-modal__input option,
+.ticket-board__title,
+.home__subtitle,
+.ticket-card__assignment,
+.ticket-card__marker,
+.ticket-card__nickname,
+.ticket-board__empty,
+.ticket-detail-modal__label,
+.ticket-modal__helper,
+.ticket-modal__counter,
+.auth-modal__subtitle,
+.auth-modal__message,
+.ticket-modal__message,
+.ticket-modal__calendar-weekdays span {
+  color: #fff !important;
+}
+
+.ticket-card__status--open,
+.ticket-card__status--progress,
+.ticket-card__status--closed {
+  background-color: #000 !important;
+  color: #fff !important;
+}
