@@ -179,7 +179,14 @@
                </select>
 
                <label class="ticket-modal__field" for="ticket-deadline">DEADLINE (optional)</label>
-               <input class="ticket-modal__input" id="ticket-deadline" name="deadline" type="text" inputmode="numeric" placeholder="TT/MM/JJJJ" pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/([0-9]{4})$" maxlength="10">
+               <div class="ticket-modal__deadline-row">
+                  <input class="ticket-modal__input" id="ticket-deadline" name="deadline" type="text" inputmode="numeric" placeholder="TT.MM.JJJJ" pattern="^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.([0-9]{4})$" maxlength="10" aria-describedby="ticket-deadline-help">
+                  <button class="ticket-modal__deadline-button" id="ticket-deadline-button" type="button" aria-label="Datum im Kalender auswaehlen">
+                     <i class="ri-calendar-todo-line"></i>
+                  </button>
+                  <input class="ticket-modal__deadline-native" id="ticket-deadline-native" type="date" tabindex="-1" aria-hidden="true">
+               </div>
+               <p class="ticket-modal__helper" id="ticket-deadline-help">Format: TT.MM.JJJJ</p>
                <p class="ticket-modal__counter" data-counter-for="ticket-deadline" aria-live="polite">0/10</p>
 
                <label class="ticket-modal__field" for="ticket-assignment">Zuweisung</label>

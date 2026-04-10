@@ -32,6 +32,8 @@ const loginOpen = document.getElementById('nav-login'),
    ticketMessage = document.getElementById('ticket-message-feedback'),
    ticketEmail = document.getElementById('ticket-email'),
    ticketDeadline = document.getElementById('ticket-deadline'),
+   ticketDeadlineButton = document.getElementById('ticket-deadline-button'),
+   ticketDeadlineNative = document.getElementById('ticket-deadline-native'),
    ticketCountryCode = document.getElementById('ticket-country-code'),
    ticketFirstInput = document.getElementById('ticket-firstname')
 
@@ -521,6 +523,87 @@ const initializeLengthCounters = () => {
    })
 }
 
+const formatDeadlineFromDigits = (value) => {
+   const digits = value.replace(/\D/g, '').slice(0, 8)
+   const day = digits.slice(0, 2)
+   const month = digits.slice(2, 4)
+   const year = digits.slice(4, 8)
+
+   let formatted = day
+   if(digits.length >= 2){
+      formatted += '.'
+   }
+   if(month){
+      formatted += month
+   }
+   if(digits.length >= 4){
+      formatted += '.'
+   }
+   if(year){
+      formatted += year
+   }
+
+   return formatted
+}
+
+const parseDeadlineToIso = (value) => {
+   const match = value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
+   if(!match) return ''
+
+   const day = Number(match[1])
+   const month = Number(match[2])
+   const year = Number(match[3])
+   const date = new Date(year, month - 1, day)
+
+   const sameDay = date.getDate() === day
+   const sameMonth = date.getMonth() === (month - 1)
+   const sameYear = date.getFullYear() === year
+
+   if(!sameDay || !sameMonth || !sameYear) return ''
+
+   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+const formatIsoToDeadline = (value) => {
+   const [year, month, day] = value.split('-')
+   if(!year || !month || !day) return ''
+   return `${day}.${month}.${year}`
+}
+
+const initializeDeadlineInput = () => {
+   if(!ticketDeadline) return
+
+   ticketDeadline.addEventListener('input', () => {
+      ticketDeadline.value = formatDeadlineFromDigits(ticketDeadline.value)
+      syncLengthCounter(ticketDeadline)
+      ticketDeadline.setCustomValidity('')
+   })
+
+   ticketDeadlineButton?.addEventListener('click', () => {
+      if(!ticketDeadlineNative) return
+
+      const isoValue = parseDeadlineToIso(ticketDeadline.value)
+      if(isoValue){
+         ticketDeadlineNative.value = isoValue
+      }
+
+      if(typeof ticketDeadlineNative.showPicker === 'function'){
+         ticketDeadlineNative.showPicker()
+         return
+      }
+
+      ticketDeadlineNative.focus()
+      ticketDeadlineNative.click()
+   })
+
+   ticketDeadlineNative?.addEventListener('change', () => {
+      if(!ticketDeadlineNative.value) return
+      ticketDeadline.value = formatIsoToDeadline(ticketDeadlineNative.value)
+      syncLengthCounter(ticketDeadline)
+      ticketDeadline.setCustomValidity('')
+   })
+}
+
 const getNextTicketId = (tickets) => {
    const maxId = tickets.reduce((maxValue, ticket) => {
       const numericId = Number(ticket?.ticketId)
@@ -688,12 +771,17 @@ if(ticketForm){
       ticketDeadline?.setCustomValidity('')
 
       const deadlineValue = ticketDeadline?.value.trim() || ''
-      const isValidDeadline = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/([0-9]{4})$/.test(deadlineValue)
+      const isValidDeadline = /^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.([0-9]{4})$/.test(deadlineValue)
+      const deadlineIso = parseDeadlineToIso(deadlineValue)
 
-      if(deadlineValue && !isValidDeadline && ticketDeadline){
-         ticketDeadline.setCustomValidity('Bitte Deadline im Format TT/MM/JJJJ eingeben.')
+      if(deadlineValue && (!isValidDeadline || !deadlineIso) && ticketDeadline){
+         ticketDeadline.setCustomValidity('Bitte Deadline im Format TT.MM.JJJJ eingeben.')
          ticketDeadline.reportValidity()
          return
+      }
+
+      if(deadlineIso && ticketDeadlineNative){
+         ticketDeadlineNative.value = deadlineIso
       }
 
       if(!ticketForm.checkValidity()){
@@ -751,11 +839,12 @@ if(ticketForm){
       }
 
       ticketForm.reset()
-   ticketForm.querySelectorAll('[maxlength]').forEach(syncLengthCounter)
+      ticketForm.querySelectorAll('[maxlength]').forEach(syncLengthCounter)
       closeTicketModal()
    })
 }
 
 populateCountryCodeSelect()
 initializeLengthCounters()
+initializeDeadlineInput()
 updateAuthButton()
