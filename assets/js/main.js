@@ -643,11 +643,29 @@ const setTicketFormMode = (isEditMode) => {
 
 const normalizeTicket = (ticket) => {
    const rawStatus = ticket?.status || TICKET_STATUS_OPEN
-   const status = rawStatus === 'erledigt' ? TICKET_STATUS_DONE : rawStatus
+   const isClosedStatus = rawStatus === 'erledigt' || rawStatus === 'geschlossen'
+   const status = isClosedStatus ? TICKET_STATUS_DONE : rawStatus
    return {
       ...ticket,
       status
    }
+}
+
+const updateTicketToClosedStatus = async (ticketId) => {
+   const candidates = Array.from(new Set([TICKET_STATUS_DONE, 'erledigt', 'geschlossen']))
+
+   for(const statusValue of candidates){
+      const updated = await updateTicketInDatabase(ticketId, {
+         status: statusValue,
+         updatedAt: new Date().toISOString()
+      })
+
+      if(updated){
+         return true
+      }
+   }
+
+   return false
 }
 
 const getTicketDisplayMarker = (ticket) => {
@@ -1573,10 +1591,7 @@ if(ticketDetailComplete){
          return
       }
 
-      const doneUpdated = await updateTicketInDatabase(tickets[ticketIndex].ticketId, {
-         status: TICKET_STATUS_DONE,
-         updatedAt: new Date().toISOString()
-      })
+      const doneUpdated = await updateTicketToClosedStatus(tickets[ticketIndex].ticketId)
       if(!doneUpdated) return
 
       await loadTicketsFromDatabase()
