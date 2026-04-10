@@ -111,7 +111,7 @@ if(authForm){
          return
       }
 
-      authMessage.textContent = 'Anmeldung fehlgeschlagen. Bitte Eingaben pruefen.'
+      authMessage.textContent = 'Anmeldung fehlgeschlagen. Bitte Eingaben prüfen.'
       authMessage.classList.remove('auth-modal__message--success')
    })
 }
