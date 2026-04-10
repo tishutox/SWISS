@@ -19,12 +19,19 @@ if(navClose){
 
 /*=============== LOGIN MODAL ===============*/
 const loginOpen = document.getElementById('nav-login'),
+   ticketOpen = document.getElementById('nav-new-ticket'),
       authModal = document.getElementById('auth-modal'),
       authClose = document.getElementById('auth-close'),
       authForm = document.getElementById('auth-form'),
       authMessage = document.getElementById('auth-message'),
       authIdentifier = document.getElementById('auth-identifier'),
-      authPassword = document.getElementById('auth-password')
+   authPassword = document.getElementById('auth-password'),
+   ticketModal = document.getElementById('ticket-modal'),
+   ticketClose = document.getElementById('ticket-close'),
+   ticketForm = document.getElementById('ticket-form'),
+   ticketMessage = document.getElementById('ticket-message-feedback'),
+   ticketEmail = document.getElementById('ticket-email'),
+   ticketFirstInput = document.getElementById('ticket-firstname')
 
 let currentUser = null
 
@@ -54,12 +61,19 @@ const updateAuthButton = () => {
    label.textContent = currentUser ? 'Abmelden' : 'Anmelden'
 }
 
+const syncBodyModalState = () => {
+   const authOpen = authModal?.classList.contains('show-auth-modal')
+   const ticketOpenState = ticketModal?.classList.contains('show-ticket-modal')
+
+   document.body.classList.toggle('modal-open', Boolean(authOpen || ticketOpenState))
+}
+
 const openAuthModal = () => {
    if(!authModal) return
 
    authModal.classList.add('show-auth-modal')
    authModal.setAttribute('aria-hidden', 'false')
-   document.body.classList.add('modal-open')
+   syncBodyModalState()
    authMessage.textContent = ''
    authMessage.classList.remove('auth-modal__message--success')
 
@@ -75,7 +89,34 @@ const closeAuthModal = () => {
 
    authModal.classList.remove('show-auth-modal')
    authModal.setAttribute('aria-hidden', 'true')
-   document.body.classList.remove('modal-open')
+   syncBodyModalState()
+}
+
+const openTicketModal = () => {
+   if(!ticketModal) return
+
+   ticketModal.classList.add('show-ticket-modal')
+   ticketModal.setAttribute('aria-hidden', 'false')
+   syncBodyModalState()
+
+   if(ticketMessage){
+      ticketMessage.textContent = ''
+      ticketMessage.classList.remove('ticket-modal__message--success')
+   }
+
+   if(navMenu){
+      navMenu.classList.remove('show-menu')
+   }
+
+   ticketFirstInput?.focus()
+}
+
+const closeTicketModal = () => {
+   if(!ticketModal) return
+
+   ticketModal.classList.remove('show-ticket-modal')
+   ticketModal.setAttribute('aria-hidden', 'true')
+   syncBodyModalState()
 }
 
 if(loginOpen){
@@ -102,6 +143,17 @@ if(authClose){
    authClose.addEventListener('click', closeAuthModal)
 }
 
+if(ticketOpen){
+   ticketOpen.addEventListener('click', (event) => {
+      event.preventDefault()
+      openTicketModal()
+   })
+}
+
+if(ticketClose){
+   ticketClose.addEventListener('click', closeTicketModal)
+}
+
 if(authModal){
    authModal.addEventListener('click', (event) => {
       if(event.target.hasAttribute('data-auth-close')){
@@ -110,9 +162,23 @@ if(authModal){
    })
 }
 
+if(ticketModal){
+   ticketModal.addEventListener('click', (event) => {
+      if(event.target.hasAttribute('data-ticket-close')){
+         closeTicketModal()
+      }
+   })
+}
+
 document.addEventListener('keydown', (event) => {
-   if(event.key === 'Escape' && authModal?.classList.contains('show-auth-modal')){
+   if(event.key !== 'Escape') return
+
+   if(authModal?.classList.contains('show-auth-modal')){
       closeAuthModal()
+   }
+
+   if(ticketModal?.classList.contains('show-ticket-modal')){
+      closeTicketModal()
    }
 })
 
@@ -140,6 +206,36 @@ if(authForm){
 
       authMessage.textContent = 'Anmeldung fehlgeschlagen. Bitte Eingaben prüfen.'
       authMessage.classList.remove('auth-modal__message--success')
+   })
+}
+
+if(ticketForm){
+   ticketForm.addEventListener('submit', (event) => {
+      event.preventDefault()
+
+      ticketEmail?.setCustomValidity('')
+
+      if(!ticketForm.checkValidity()){
+         ticketForm.reportValidity()
+         return
+      }
+
+      const emailValue = ticketEmail?.value.trim() || ''
+      const isThaEmail = /^[^\s@]+@tha\.de$/i.test(emailValue)
+
+      if(!isThaEmail && ticketEmail){
+         ticketEmail.setCustomValidity('Bitte nur eine E-Mail mit @tha.de verwenden.')
+         ticketEmail.reportValidity()
+         return
+      }
+
+      if(ticketMessage){
+         ticketMessage.textContent = 'Ticket erfolgreich erstellt.'
+         ticketMessage.classList.add('ticket-modal__message--success')
+      }
+
+      ticketForm.reset()
+      closeTicketModal()
    })
 }
 

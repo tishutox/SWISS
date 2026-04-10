@@ -23,7 +23,7 @@
             <div class="nav__menu" id="nav-menu">
                <ul class="nav__list">
                   <li class="nav__item">
-                     <a href="#" class="nav__link">
+                     <a href="#" class="nav__link" id="nav-new-ticket">
                         <span>Neues Ticket</span>
                      </a>
                   </li>
@@ -101,6 +101,80 @@
                <p class="auth-modal__message" id="auth-message" aria-live="polite"></p>
 
                <button type="submit" class="auth-modal__submit">ANMELDEN</button>
+            </form>
+         </section>
+      </div>
+
+      <!--==================== NEW TICKET MODAL ====================-->
+      <div class="ticket-modal" id="ticket-modal" aria-hidden="true">
+         <div class="ticket-modal__backdrop" data-ticket-close></div>
+
+         <section class="ticket-modal__panel" role="dialog" aria-modal="true" aria-labelledby="ticket-title">
+            <button type="button" class="ticket-modal__close" id="ticket-close" aria-label="Ticket-Modal schließen">
+               <i class="ri-close-large-line"></i>
+            </button>
+
+            <h2 class="ticket-modal__title" id="ticket-title">NEUES TICKET</h2>
+            <p class="ticket-modal__subtitle">Bitte alle Pflichtfelder ausfüllen.</p>
+
+            <form class="ticket-modal__form" id="ticket-form" novalidate>
+               <label class="ticket-modal__field" for="ticket-firstname">Vorname*</label>
+               <input class="ticket-modal__input" id="ticket-firstname" name="firstName" type="text" required>
+
+               <label class="ticket-modal__field" for="ticket-lastname">Nachname*</label>
+               <input class="ticket-modal__input" id="ticket-lastname" name="lastName" type="text" required>
+
+               <label class="ticket-modal__field" for="ticket-nickname">Spitzname*</label>
+               <input class="ticket-modal__input" id="ticket-nickname" name="nickName" type="text" required>
+
+               <label class="ticket-modal__field" for="ticket-email">E-Mail (@tha.de)*</label>
+               <input
+                  class="ticket-modal__input"
+                  id="ticket-email"
+                  name="email"
+                  type="email"
+                  inputmode="email"
+                  pattern="^[^\s@]+@tha\.de$"
+                  required
+               >
+
+               <label class="ticket-modal__field" for="ticket-number">Nummer (optional)</label>
+               <input class="ticket-modal__input" id="ticket-number" name="phoneNumber" type="tel" inputmode="tel">
+
+               <label class="ticket-modal__field" for="ticket-discord">Discord-Username (optional)</label>
+               <input class="ticket-modal__input" id="ticket-discord" name="discord" type="text">
+
+               <label class="ticket-modal__field" for="ticket-module">Modul (optional)</label>
+               <select class="ticket-modal__input" id="ticket-module" name="module">
+                  <option value="kein-modul" selected>kein Modul</option>
+                  <option value="mathematik">Mathematik</option>
+                  <option value="programmieren">Programmieren</option>
+               </select>
+
+               <label class="ticket-modal__field" for="ticket-title-input">Titel* (max. 30 Zeichen)</label>
+               <input class="ticket-modal__input" id="ticket-title-input" name="title" type="text" maxlength="30" required>
+
+               <label class="ticket-modal__field" for="ticket-message">Nachricht* (max. 5000 Zeichen)</label>
+               <textarea class="ticket-modal__input ticket-modal__textarea" id="ticket-message" name="message" maxlength="5000" required></textarea>
+
+               <label class="ticket-modal__field" for="ticket-priority">Dringlichkeit*</label>
+               <select class="ticket-modal__input" id="ticket-priority" name="priority" required>
+                  <option value="" selected disabled>Bitte wählen</option>
+                  <option value="niedrig">Niedrig</option>
+                  <option value="mittel">Mittel</option>
+                  <option value="hoch">Hoch</option>
+               </select>
+
+               <label class="ticket-modal__field" for="ticket-assignment">Zuweisung</label>
+               <select class="ticket-modal__input" id="ticket-assignment" name="assignment">
+                  <option value="egal" selected>Egal</option>
+                  <option value="armand">Armand</option>
+                  <option value="ibrahim">Ibrahim</option>
+               </select>
+
+               <p class="ticket-modal__message" id="ticket-message-feedback" aria-live="polite"></p>
+
+               <button type="submit" class="ticket-modal__submit">TICKET ERSTELLEN</button>
             </form>
          </section>
       </div>

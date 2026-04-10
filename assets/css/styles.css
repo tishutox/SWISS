@@ -314,6 +314,121 @@ a {
   pointer-events: auto;
 }
 
+/*=============== NEW TICKET MODAL ===============*/
+.ticket-modal {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-fixed) + 10);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+
+.ticket-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .75);
+}
+
+.ticket-modal__panel {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  width: 100%;
+  background: linear-gradient(180deg, #0a0a0a 0%, #171717 100%);
+  color: var(--white-color);
+  padding: 5.5rem 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.ticket-modal__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--white-color);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.ticket-modal__title {
+  font-size: 1.4rem;
+  letter-spacing: .08em;
+}
+
+.ticket-modal__subtitle {
+  color: rgba(255, 255, 255, .75);
+  margin-bottom: .75rem;
+}
+
+.ticket-modal__form {
+  width: min(100%, 38rem);
+  display: grid;
+  gap: .75rem;
+}
+
+.ticket-modal__field {
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.ticket-modal__input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, .25);
+  background-color: rgba(255, 255, 255, .08);
+  color: var(--white-color);
+  padding: .85rem 1rem;
+  font-size: 1rem;
+  border-radius: .4rem;
+}
+
+.ticket-modal__input:focus {
+  outline: 2px solid rgba(255, 255, 255, .45);
+  outline-offset: 1px;
+}
+
+.ticket-modal__input option {
+  color: var(--black-color);
+}
+
+.ticket-modal__textarea {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.ticket-modal__message {
+  min-height: 1.25rem;
+  font-size: .9rem;
+  color: #ffb4b4;
+}
+
+.ticket-modal__message--success {
+  color: #a3f3ba;
+}
+
+.ticket-modal__submit {
+  margin-top: .25rem;
+  border: 0;
+  background-color: var(--white-color);
+  color: var(--black-color);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  padding: .85rem 1rem;
+  border-radius: .4rem;
+  cursor: pointer;
+}
+
+.show-ticket-modal {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .modal-open {
   overflow: hidden;
 }
@@ -330,9 +445,22 @@ a {
     place-items: center;
   }
 
+  .ticket-modal {
+    display: grid;
+    place-items: center;
+  }
+
   .auth-modal__panel {
     min-height: auto;
     width: min(100%, 34rem);
+    border-radius: .75rem;
+    padding: 3.5rem 2.5rem 2.25rem;
+  }
+
+  .ticket-modal__panel {
+    min-height: auto;
+    width: min(100%, 44rem);
+    max-height: calc(100dvh - 4rem);
     border-radius: .75rem;
     padding: 3.5rem 2.5rem 2.25rem;
   }
