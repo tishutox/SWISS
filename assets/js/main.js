@@ -767,16 +767,18 @@ const renderColumn = (columnElement, tickets) => {
 
 const enforceAdminDashboardVisibility = () => {
    const isAdmin = Boolean(currentUser?.isAdmin)
+   const shouldShowBoard = Boolean(isAdmin && boardViewActive)
 
    if(!isAdmin){
       boardViewActive = false
-      homeContent?.removeAttribute('hidden')
-      adminTicketBoard?.setAttribute('hidden', 'true')
-      allTicketsLink?.querySelector('span')?.replaceChildren('Alle Tickets')
    }
 
+   homeContent?.toggleAttribute('hidden', shouldShowBoard)
+   adminTicketBoard?.toggleAttribute('hidden', !shouldShowBoard)
+   allTicketsLink?.querySelector('span')?.replaceChildren(shouldShowBoard ? 'STARTSEITE' : 'Alle Tickets')
+
    if(boardPullIndicator){
-      boardPullIndicator.hidden = !isAdmin
+      boardPullIndicator.hidden = !shouldShowBoard
    }
 }
 
@@ -800,18 +802,12 @@ const renderTicketBoard = async () => {
 const showBoardView = async () => {
    if(!currentUser?.isAdmin) return
    boardViewActive = true
-   homeContent?.setAttribute('hidden', 'true')
-   adminTicketBoard?.removeAttribute('hidden')
-   allTicketsLink?.querySelector('span')?.replaceChildren('STARTSEITE')
    enforceAdminDashboardVisibility()
    await renderTicketBoard()
 }
 
 const showHomeView = () => {
    boardViewActive = false
-   homeContent?.removeAttribute('hidden')
-   adminTicketBoard?.setAttribute('hidden', 'true')
-   allTicketsLink?.querySelector('span')?.replaceChildren('Alle Tickets')
    enforceAdminDashboardVisibility()
 }
 
