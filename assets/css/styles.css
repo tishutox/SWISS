@@ -1000,9 +1000,3 @@ body,
   color: #fff !important;
 }
 
-.ticket-card__status--open,
-.ticket-card__status--progress,
-.ticket-card__status--closed {
-  background-color: #000 !important;
-  color: #fff !important;
-}

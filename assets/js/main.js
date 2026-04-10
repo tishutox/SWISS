@@ -77,6 +77,10 @@ const TICKET_STATUS_IN_PROGRESS = 'in-bearbeitung'
 const TICKET_STATUS_DONE = 'geschlossen'
 const AUTH_SESSION_STORAGE_KEY = 'swiss_auth_session'
 const AUTH_SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
+const ASSIGNMENT_VALUES = ['egal', 'armand', 'ibrahim']
+const PRIORITY_VALUES = ['niedrig', 'mittel', 'hoch']
+const STATUS_VALUES = [TICKET_STATUS_OPEN, TICKET_STATUS_IN_PROGRESS, TICKET_STATUS_DONE, 'erledigt']
+const SQL_INJECTION_PATTERN = /(--|;|\/\*|\*\/|\b(drop|alter|truncate|insert|delete|update|select|union|exec|execute)\b)/i
 
 const countryCallingCodes = [
    { country: 'Afghanistan', code: '+93' },
@@ -1047,6 +1051,62 @@ const mapAppTicketToDb = (ticket) => {
    }
 }
 
+const sanitizeTextInput = (value, maxLength, allowNewLines = false) => {
+   if(typeof value !== 'string') return ''
+
+   const controlRegex = allowNewLines ? /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g : /[\x00-\x1F\x7F]/g
+   return value.replace(controlRegex, '').trim().slice(0, maxLength)
+}
+
+const hasSuspiciousSqlPattern = (value) => {
+   return SQL_INJECTION_PATTERN.test(value)
+}
+
+const validateEnum = (value, allowedValues, fallback) => {
+   return allowedValues.includes(value) ? value : fallback
+}
+
+const validateAndSanitizeTicketPayload = (payload) => {
+   const clean = {
+      ...payload,
+      firstName: sanitizeTextInput(payload.firstName, 30),
+      lastName: sanitizeTextInput(payload.lastName, 30),
+      nickName: sanitizeTextInput(payload.nickName, 15),
+      email: sanitizeTextInput(payload.email, 120),
+      phoneCountryCode: sanitizeTextInput(payload.phoneCountryCode, 10),
+      phoneNumber: sanitizeTextInput(payload.phoneNumber, 40),
+      phoneNumberFull: sanitizeTextInput(payload.phoneNumberFull, 55),
+      discord: sanitizeTextInput(payload.discord, 60),
+      module: sanitizeTextInput(payload.module, 140),
+      title: sanitizeTextInput(payload.title, 30),
+      message: sanitizeTextInput(payload.message, 5000, true),
+      deadline: sanitizeTextInput(payload.deadline, 10),
+      assignment: validateEnum(sanitizeTextInput(payload.assignment, 20), ASSIGNMENT_VALUES, 'egal'),
+      priority: validateEnum(sanitizeTextInput(payload.priority, 20), PRIORITY_VALUES, 'niedrig'),
+      status: validateEnum(sanitizeTextInput(payload.status || TICKET_STATUS_OPEN, 20), STATUS_VALUES, TICKET_STATUS_OPEN)
+   }
+
+   const criticalFields = [clean.firstName, clean.lastName, clean.nickName, clean.title, clean.discord]
+   if(criticalFields.some(hasSuspiciousSqlPattern)){
+      return {
+         isValid: false,
+         message: 'Ungültige Eingabe erkannt. Bitte Sonderzeichen in Kurzfeldern prüfen.'
+      }
+   }
+
+   if(!clean.firstName || !clean.lastName || !clean.nickName || !clean.title || !clean.message){
+      return {
+         isValid: false,
+         message: 'Pflichtfelder sind ungültig oder leer.'
+      }
+   }
+
+   return {
+      isValid: true,
+      data: clean
+   }
+}
+
 const getStoredTickets = () => {
    return ticketsCache.map(normalizeTicket)
 }
@@ -1086,29 +1146,55 @@ const createTicketInDatabase = async (ticket) => {
 const updateTicketInDatabase = async (ticketId, patch) => {
    if(!supabaseClient) return false
 
+   const numericTicketId = Number(ticketId)
+   if(!Number.isInteger(numericTicketId) || numericTicketId <= 0){
+      return false
+   }
+
+   const sanitizedPatchResult = validateAndSanitizeTicketPayload({
+      ...patch,
+      firstName: patch.firstName ?? '',
+      lastName: patch.lastName ?? '',
+      nickName: patch.nickName ?? '',
+      email: patch.email ?? '',
+      phoneCountryCode: patch.phoneCountryCode ?? '',
+      phoneNumber: patch.phoneNumber ?? '',
+      phoneNumberFull: patch.phoneNumberFull ?? '',
+      discord: patch.discord ?? '',
+      module: patch.module ?? '',
+      title: patch.title ?? '',
+      message: patch.message ?? 'placeholder',
+      priority: patch.priority ?? 'niedrig',
+      deadline: patch.deadline ?? '',
+      assignment: patch.assignment ?? 'egal',
+      status: patch.status ?? TICKET_STATUS_OPEN
+   })
+
+   const safePatch = sanitizedPatchResult.isValid ? sanitizedPatchResult.data : patch
+
    const dbPatch = {}
 
-   if(Object.hasOwn(patch, 'firstName')) dbPatch.first_name = patch.firstName
-   if(Object.hasOwn(patch, 'lastName')) dbPatch.last_name = patch.lastName
-   if(Object.hasOwn(patch, 'nickName')) dbPatch.nick_name = patch.nickName
-   if(Object.hasOwn(patch, 'email')) dbPatch.email = patch.email
-   if(Object.hasOwn(patch, 'phoneCountryCode')) dbPatch.phone_country_code = patch.phoneCountryCode
-   if(Object.hasOwn(patch, 'phoneNumber')) dbPatch.phone_number = patch.phoneNumber
-   if(Object.hasOwn(patch, 'phoneNumberFull')) dbPatch.phone_number_full = patch.phoneNumberFull
-   if(Object.hasOwn(patch, 'discord')) dbPatch.discord = patch.discord
-   if(Object.hasOwn(patch, 'module')) dbPatch.module = patch.module
-   if(Object.hasOwn(patch, 'title')) dbPatch.title = patch.title
-   if(Object.hasOwn(patch, 'message')) dbPatch.message = patch.message
-   if(Object.hasOwn(patch, 'priority')) dbPatch.priority = patch.priority
-   if(Object.hasOwn(patch, 'deadline')) dbPatch.deadline = patch.deadline
-   if(Object.hasOwn(patch, 'assignment')) dbPatch.assignment = patch.assignment
-   if(Object.hasOwn(patch, 'status')) dbPatch.status = patch.status
+   if(Object.hasOwn(patch, 'firstName')) dbPatch.first_name = safePatch.firstName
+   if(Object.hasOwn(patch, 'lastName')) dbPatch.last_name = safePatch.lastName
+   if(Object.hasOwn(patch, 'nickName')) dbPatch.nick_name = safePatch.nickName
+   if(Object.hasOwn(patch, 'email')) dbPatch.email = safePatch.email
+   if(Object.hasOwn(patch, 'phoneCountryCode')) dbPatch.phone_country_code = safePatch.phoneCountryCode
+   if(Object.hasOwn(patch, 'phoneNumber')) dbPatch.phone_number = safePatch.phoneNumber
+   if(Object.hasOwn(patch, 'phoneNumberFull')) dbPatch.phone_number_full = safePatch.phoneNumberFull
+   if(Object.hasOwn(patch, 'discord')) dbPatch.discord = safePatch.discord
+   if(Object.hasOwn(patch, 'module')) dbPatch.module = safePatch.module
+   if(Object.hasOwn(patch, 'title')) dbPatch.title = safePatch.title
+   if(Object.hasOwn(patch, 'message')) dbPatch.message = safePatch.message
+   if(Object.hasOwn(patch, 'priority')) dbPatch.priority = safePatch.priority
+   if(Object.hasOwn(patch, 'deadline')) dbPatch.deadline = safePatch.deadline
+   if(Object.hasOwn(patch, 'assignment')) dbPatch.assignment = safePatch.assignment
+   if(Object.hasOwn(patch, 'status')) dbPatch.status = safePatch.status
    if(Object.hasOwn(patch, 'updatedAt')) dbPatch.updated_at = patch.updatedAt
 
    const { error } = await supabaseClient
       .from('tickets')
       .update(dbPatch)
-      .eq('ticket_id', ticketId)
+      .eq('ticket_id', numericTicketId)
 
    if(error){
       console.error('Supabase Fehler beim Aktualisieren:', error.message)
@@ -1717,13 +1803,34 @@ if(ticketForm){
          assignment: formData.get('assignment')?.toString() || 'egal'
       }
 
+      const validationResult = validateAndSanitizeTicketPayload({
+         ...baseTicketData,
+         status: editingTicketId ? TICKET_STATUS_IN_PROGRESS : TICKET_STATUS_OPEN
+      })
+
+      if(!validationResult.isValid){
+         if(ticketMessage){
+            ticketMessage.textContent = validationResult.message
+            ticketMessage.classList.remove('ticket-modal__message--success')
+         }
+         return
+      }
+
+      const sanitizedTicketData = {
+         ...baseTicketData,
+         ...validationResult.data,
+         createdAt: baseTicketData.createdAt,
+         createdDate: baseTicketData.createdDate,
+         createdTime: baseTicketData.createdTime
+      }
+
       if(editingTicketId){
          const ticketIndex = storedTickets.findIndex((ticket) => Number(ticket.ticketId) === Number(editingTicketId))
 
          if(ticketIndex !== -1){
             const updatedTicket = {
                ...storedTickets[ticketIndex],
-               ...baseTicketData,
+               ...sanitizedTicketData,
                ticketId: storedTickets[ticketIndex].ticketId,
                createdAt: storedTickets[ticketIndex].createdAt,
                createdDate: storedTickets[ticketIndex].createdDate,
@@ -1738,7 +1845,7 @@ if(ticketForm){
       else{
          const newTicket = {
             ticketId: nextTicketId,
-            ...baseTicketData,
+            ...sanitizedTicketData,
             status: TICKET_STATUS_OPEN
          }
 
