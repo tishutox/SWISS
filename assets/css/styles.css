@@ -44,10 +44,7 @@ body {
   font-family: var(--body-font);
   font-size: var(--normal-font-size);
   color: var(--white-color);
-  background:
-    radial-gradient(120rem 80rem at -10% -20%, rgba(255, 255, 255, .10) 0%, rgba(255, 255, 255, 0) 45%),
-    radial-gradient(90rem 60rem at 120% 10%, rgba(255, 255, 255, .08) 0%, rgba(255, 255, 255, 0) 50%),
-    linear-gradient(180deg, #0a0a0a 0%, #141414 55%, #0f0f0f 100%);
+  background-color: #111111;
   min-height: 100dvh;
 }
 
@@ -226,7 +223,7 @@ main {
   border: 1px solid rgba(255, 255, 255, .18);
   border-radius: .75rem;
   padding: 1.2rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .07) 0%, rgba(255, 255, 255, .03) 100%);
+  background-color: rgba(255, 255, 255, .05);
   backdrop-filter: blur(2px);
 }
 
@@ -249,7 +246,7 @@ main {
   border: 1px solid rgba(255, 255, 255, .16);
   border-radius: .75rem;
   padding: .85rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .08) 0%, rgba(255, 255, 255, .04) 100%);
+  background-color: rgba(255, 255, 255, .06);
   backdrop-filter: blur(2px);
 }
 
@@ -332,7 +329,7 @@ main {
   z-index: 1;
   min-height: 100dvh;
   width: 100%;
-  background: linear-gradient(180deg, #0a0a0a 0%, #171717 100%);
+  background-color: #141414;
   color: var(--white-color);
   padding: 5.5rem 1.5rem 2rem;
   overflow-y: auto;
@@ -424,7 +421,7 @@ main {
   z-index: 1;
   min-height: 100dvh;
   width: 100%;
-  background: linear-gradient(180deg, #0a0a0a 0%, #171717 100%);
+  background-color: #141414;
   color: var(--white-color);
   padding: 5.5rem 1.5rem 2rem;
   display: flex;
@@ -530,7 +527,7 @@ main {
   z-index: 1;
   min-height: 100dvh;
   width: 100%;
-  background: linear-gradient(180deg, #0a0a0a 0%, #171717 100%);
+  background-color: #141414;
   color: var(--white-color);
   padding: 5.5rem 1.5rem 2rem;
   display: flex;
