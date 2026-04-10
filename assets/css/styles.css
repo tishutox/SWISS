@@ -250,6 +250,7 @@ main {
 .ticket-board {
   display: grid;
   gap: 1rem;
+  margin-top: 1rem;
   padding-bottom: 2rem;
 }
 
@@ -327,15 +328,49 @@ main {
   font-size: .75rem;
 }
 
+.ticket-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: .3rem;
+}
+
 .ticket-card__title {
   display: block;
-  width: 100%;
+  flex: 1;
   text-align: left;
-  margin-bottom: .35rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: rgba(255, 255, 255, .92);
+}
+
+.ticket-card__status {
+  border-radius: 999px;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: .2rem .45rem;
+  white-space: nowrap;
+}
+
+.ticket-card__status--open {
+  background-color: rgba(255, 172, 84, .2);
+  border: 1px solid rgba(255, 172, 84, .6);
+  color: #ffd7a8;
+}
+
+.ticket-card__status--progress {
+  background-color: rgba(114, 192, 255, .2);
+  border: 1px solid rgba(114, 192, 255, .6);
+  color: #bee4ff;
+}
+
+.ticket-card__status--closed {
+  background-color: rgba(118, 227, 156, .18);
+  border: 1px solid rgba(118, 227, 156, .55);
+  color: #c8f6d8;
 }
 
 .ticket-card__nickname {

@@ -599,6 +599,7 @@ const updateAuthButton = () => {
    }
 
    updateAuthSessionNote()
+   enforceAdminDashboardVisibility()
 }
 
 const updateAuthSessionNote = () => {
@@ -668,6 +669,18 @@ const getAssignmentLabel = (ticket) => {
    return ticket.assignment
 }
 
+const getStatusLabel = (status) => {
+   if(status === TICKET_STATUS_IN_PROGRESS) return 'IN BEARBEITUNG'
+   if(status === TICKET_STATUS_DONE) return 'GESCHLOSSEN'
+   return 'OFFEN'
+}
+
+const getStatusClassName = (status) => {
+   if(status === TICKET_STATUS_IN_PROGRESS) return 'ticket-card__status--progress'
+   if(status === TICKET_STATUS_DONE) return 'ticket-card__status--closed'
+   return 'ticket-card__status--open'
+}
+
 const truncateTitle = (title) => {
    if(title.length <= 26) return title
    return `${title.slice(0, 26)}...`
@@ -700,9 +713,18 @@ const renderColumn = (columnElement, tickets) => {
       card.className = 'ticket-card'
       card.dataset.ticketId = String(ticket.ticketId)
 
+      const header = document.createElement('div')
+      header.className = 'ticket-card__header'
+
       const title = document.createElement('span')
       title.className = 'ticket-card__title'
       title.textContent = truncateTitle(ticket.title || 'Ohne Titel')
+
+      const statusBadge = document.createElement('span')
+      statusBadge.className = `ticket-card__status ${getStatusClassName(ticket.status)}`
+      statusBadge.textContent = getStatusLabel(ticket.status)
+
+      header.append(title, statusBadge)
 
       const nickname = document.createElement('span')
       nickname.className = 'ticket-card__nickname'
@@ -720,9 +742,24 @@ const renderColumn = (columnElement, tickets) => {
       assignment.textContent = getAssignmentLabel(ticket)
 
       meta.append(marker, assignment)
-      card.append(title, nickname, meta)
+      card.append(header, nickname, meta)
       columnElement.append(card)
    })
+}
+
+const enforceAdminDashboardVisibility = () => {
+   const isAdmin = Boolean(currentUser?.isAdmin)
+
+   if(!isAdmin){
+      boardViewActive = false
+      homeContent?.removeAttribute('hidden')
+      adminTicketBoard?.setAttribute('hidden', 'true')
+      allTicketsLink?.querySelector('span')?.replaceChildren('Alle Tickets')
+   }
+
+   if(boardPullIndicator){
+      boardPullIndicator.hidden = !isAdmin
+   }
 }
 
 const renderTicketBoard = async () => {
@@ -748,6 +785,7 @@ const showBoardView = async () => {
    homeContent?.setAttribute('hidden', 'true')
    adminTicketBoard?.removeAttribute('hidden')
    allTicketsLink?.querySelector('span')?.replaceChildren('STARTSEITE')
+   enforceAdminDashboardVisibility()
    await renderTicketBoard()
 }
 
@@ -756,6 +794,7 @@ const showHomeView = () => {
    homeContent?.removeAttribute('hidden')
    adminTicketBoard?.setAttribute('hidden', 'true')
    allTicketsLink?.querySelector('span')?.replaceChildren('Alle Tickets')
+   enforceAdminDashboardVisibility()
 }
 
 const setBoardPullIndicator = (distance, ready = false, text = 'Ziehen zum Aktualisieren') => {
@@ -1732,6 +1771,7 @@ setTicketFormMode(false)
 showHomeView()
 hydrateUserSession()
 updateAuthButton()
+enforceAdminDashboardVisibility()
 
 loadTicketsFromDatabase()
 
