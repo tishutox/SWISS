@@ -74,6 +74,8 @@ const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON
 const TICKET_STATUS_OPEN = 'offen'
 const TICKET_STATUS_IN_PROGRESS = 'in-bearbeitung'
 const TICKET_STATUS_DONE = 'erledigt'
+const AUTH_SESSION_STORAGE_KEY = 'swiss_auth_session'
+const AUTH_SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
 const countryCallingCodes = [
    { country: 'Afghanistan', code: '+93' },
@@ -489,6 +491,88 @@ const users = [
       isAdmin: true
    }
 ]
+
+const clearStoredAuthSession = () => {
+   localStorage.removeItem(AUTH_SESSION_STORAGE_KEY)
+}
+
+const storeAuthSession = (user) => {
+   if(!user) return
+
+   const payload = {
+      username: user.username,
+      issuedAt: Date.now()
+   }
+
+   localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(payload))
+}
+
+const getStoredAuthSession = () => {
+   try{
+      const rawValue = localStorage.getItem(AUTH_SESSION_STORAGE_KEY)
+      if(!rawValue) return null
+
+      const parsed = JSON.parse(rawValue)
+      if(!parsed?.username || typeof parsed.issuedAt !== 'number') return null
+      return parsed
+   }
+   catch{
+      return null
+   }
+}
+
+const isStoredSessionExpired = (session) => {
+   if(!session?.issuedAt) return true
+   return (Date.now() - session.issuedAt) >= AUTH_SESSION_MAX_AGE_MS
+}
+
+const logoutCurrentUser = () => {
+   currentUser = null
+   editingTicketId = null
+   authForm?.reset()
+
+   if(authMessage){
+      authMessage.textContent = ''
+      authMessage.classList.remove('auth-modal__message--success')
+   }
+
+   clearStoredAuthSession()
+   closeTicketDetailModal()
+   showHomeView()
+   closeAuthModal()
+   updateAuthButton()
+}
+
+const hydrateUserSession = () => {
+   const session = getStoredAuthSession()
+   if(!session){
+      clearStoredAuthSession()
+      return false
+   }
+
+   if(isStoredSessionExpired(session)){
+      clearStoredAuthSession()
+      return false
+   }
+
+   const matchedUser = users.find((user) => user.username === session.username)
+   if(!matchedUser){
+      clearStoredAuthSession()
+      return false
+   }
+
+   currentUser = matchedUser
+   return true
+}
+
+const enforceSessionExpiry = () => {
+   if(!currentUser) return
+
+   const session = getStoredAuthSession()
+   if(!session || isStoredSessionExpired(session)){
+      logoutCurrentUser()
+   }
+}
 
 const updateAuthButton = () => {
    if(!loginOpen) return
@@ -1266,17 +1350,7 @@ if(loginOpen){
       event.preventDefault()
 
       if(currentUser){
-         currentUser = null
-         editingTicketId = null
-         authForm?.reset()
-         if(authMessage){
-            authMessage.textContent = ''
-            authMessage.classList.remove('auth-modal__message--success')
-         }
-         closeTicketDetailModal()
-         showHomeView()
-         closeAuthModal()
-         updateAuthButton()
+         logoutCurrentUser()
          return
       }
 
@@ -1302,6 +1376,7 @@ if(ticketOpen){
 if(allTicketsLink){
    allTicketsLink.addEventListener('click', async (event) => {
       event.preventDefault()
+   enforceSessionExpiry()
       if(!currentUser?.isAdmin) return
 
       if(navMenu){
@@ -1363,6 +1438,7 @@ if(ticketDetailClose){
 
 if(ticketDetailEdit){
    ticketDetailEdit.addEventListener('click', async () => {
+   enforceSessionExpiry()
       if(!currentUser?.isAdmin || !boardViewActive) return
 
       await loadTicketsFromDatabase()
@@ -1392,6 +1468,7 @@ if(ticketDetailEdit){
 
 if(ticketDetailComplete){
    ticketDetailComplete.addEventListener('click', async () => {
+   enforceSessionExpiry()
       if(!currentUser?.isAdmin || !boardViewActive) return
 
       await loadTicketsFromDatabase()
@@ -1444,6 +1521,7 @@ if(authForm){
 
       if(matchedUser){
          currentUser = matchedUser
+         storeAuthSession(matchedUser)
          authMessage.textContent = `Erfolgreich angemeldet: ${matchedUser.firstName} ${matchedUser.lastName}`
          authMessage.classList.add('auth-modal__message--success')
          authForm.reset()
@@ -1592,6 +1670,14 @@ initializeDeadlineInput()
 initializeBoardPullToRefresh()
 setTicketFormMode(false)
 showHomeView()
+hydrateUserSession()
 updateAuthButton()
 
 loadTicketsFromDatabase()
+
+setInterval(enforceSessionExpiry, 60 * 1000)
+document.addEventListener('visibilitychange', () => {
+   if(document.visibilityState === 'visible'){
+      enforceSessionExpiry()
+   }
+})
