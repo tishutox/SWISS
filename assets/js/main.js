@@ -33,7 +33,11 @@ const loginOpen = document.getElementById('nav-login'),
    ticketEmail = document.getElementById('ticket-email'),
    ticketDeadline = document.getElementById('ticket-deadline'),
    ticketDeadlineButton = document.getElementById('ticket-deadline-button'),
-   ticketDeadlineNative = document.getElementById('ticket-deadline-native'),
+   ticketDeadlineCalendar = document.getElementById('ticket-deadline-calendar'),
+   ticketCalendarPrev = document.getElementById('ticket-calendar-prev'),
+   ticketCalendarNext = document.getElementById('ticket-calendar-next'),
+   ticketCalendarTitle = document.getElementById('ticket-calendar-title'),
+   ticketCalendarDays = document.getElementById('ticket-calendar-days'),
    ticketCountryCode = document.getElementById('ticket-country-code'),
    ticketFirstInput = document.getElementById('ticket-firstname')
 
@@ -546,6 +550,16 @@ const formatDeadlineFromDigits = (value) => {
    return formatted
 }
 
+const getTodayStart = () => {
+   const today = new Date()
+   today.setHours(0, 0, 0, 0)
+   return today
+}
+
+const isPastDate = (date) => {
+   return date.getTime() < getTodayStart().getTime()
+}
+
 const parseDeadlineToIso = (value) => {
    const match = value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
    if(!match) return ''
@@ -564,44 +578,171 @@ const parseDeadlineToIso = (value) => {
    return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-const formatIsoToDeadline = (value) => {
-   const [year, month, day] = value.split('-')
-   if(!year || !month || !day) return ''
-   return `${day}.${month}.${year}`
+const parseDeadlineToDate = (value) => {
+   const isoValue = parseDeadlineToIso(value)
+   if(!isoValue) return null
+
+   const [year, month, day] = isoValue.split('-').map(Number)
+   const date = new Date(year, month - 1, day)
+   date.setHours(0, 0, 0, 0)
+   return date
 }
 
 const initializeDeadlineInput = () => {
    if(!ticketDeadline) return
 
+   const calendarState = {
+      visibleMonth: (() => {
+         const base = getTodayStart()
+         return new Date(base.getFullYear(), base.getMonth(), 1)
+      })()
+   }
+
+   const closeCalendar = () => {
+      if(!ticketDeadlineCalendar) return
+      ticketDeadlineCalendar.classList.remove('ticket-modal__calendar--open')
+      ticketDeadlineCalendar.setAttribute('aria-hidden', 'true')
+   }
+
+   const openCalendar = () => {
+      if(!ticketDeadlineCalendar) return
+      ticketDeadlineCalendar.classList.add('ticket-modal__calendar--open')
+      ticketDeadlineCalendar.setAttribute('aria-hidden', 'false')
+   }
+
+   const formatDateToDeadline = (date) => {
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = String(date.getFullYear())
+      return `${day}.${month}.${year}`
+   }
+
+   const setDeadlineFromDate = (date) => {
+      ticketDeadline.value = formatDateToDeadline(date)
+      syncLengthCounter(ticketDeadline)
+      ticketDeadline.setCustomValidity('')
+   }
+
+   const renderCalendar = () => {
+      if(!ticketCalendarDays || !ticketCalendarTitle) return
+
+      const firstDay = new Date(
+         calendarState.visibleMonth.getFullYear(),
+         calendarState.visibleMonth.getMonth(),
+         1
+      )
+
+      const monthLabel = firstDay.toLocaleDateString('de-DE', {
+         month: 'long',
+         year: 'numeric'
+      })
+      ticketCalendarTitle.textContent = monthLabel
+      ticketCalendarDays.innerHTML = ''
+
+      const weekOffset = (firstDay.getDay() + 6) % 7
+      const daysInMonth = new Date(firstDay.getFullYear(), firstDay.getMonth() + 1, 0).getDate()
+      const selectedDate = parseDeadlineToDate(ticketDeadline.value)
+      const today = getTodayStart()
+
+      for(let i = 0; i < weekOffset; i += 1){
+         const emptyDay = document.createElement('span')
+         emptyDay.className = 'ticket-modal__calendar-empty'
+         ticketCalendarDays.append(emptyDay)
+      }
+
+      for(let day = 1; day <= daysInMonth; day += 1){
+         const currentDate = new Date(firstDay.getFullYear(), firstDay.getMonth(), day)
+         currentDate.setHours(0, 0, 0, 0)
+
+         const dayButton = document.createElement('button')
+         dayButton.type = 'button'
+         dayButton.className = 'ticket-modal__calendar-day'
+         dayButton.textContent = String(day)
+
+         if(currentDate.getTime() === today.getTime()){
+            dayButton.classList.add('ticket-modal__calendar-day--today')
+         }
+
+         if(selectedDate && currentDate.getTime() === selectedDate.getTime()){
+            dayButton.classList.add('ticket-modal__calendar-day--selected')
+         }
+
+         if(isPastDate(currentDate)){
+            dayButton.disabled = true
+         }
+         else{
+            dayButton.addEventListener('click', () => {
+               setDeadlineFromDate(currentDate)
+               closeCalendar()
+            })
+         }
+
+         ticketCalendarDays.append(dayButton)
+      }
+
+      if(ticketCalendarPrev){
+         const isCurrentMonth = firstDay.getFullYear() === today.getFullYear()
+            && firstDay.getMonth() === today.getMonth()
+         ticketCalendarPrev.disabled = isCurrentMonth
+      }
+   }
+
    ticketDeadline.addEventListener('input', () => {
       ticketDeadline.value = formatDeadlineFromDigits(ticketDeadline.value)
       syncLengthCounter(ticketDeadline)
       ticketDeadline.setCustomValidity('')
+      renderCalendar()
    })
 
    ticketDeadlineButton?.addEventListener('click', () => {
-      if(!ticketDeadlineNative) return
+      if(!ticketDeadlineCalendar) return
 
-      const isoValue = parseDeadlineToIso(ticketDeadline.value)
-      if(isoValue){
-         ticketDeadlineNative.value = isoValue
-      }
+      const selected = parseDeadlineToDate(ticketDeadline.value)
+      const fallbackDate = getTodayStart()
+      const selectedMonthBase = selected && !isPastDate(selected) ? selected : fallbackDate
+      calendarState.visibleMonth = new Date(selectedMonthBase.getFullYear(), selectedMonthBase.getMonth(), 1)
 
-      if(typeof ticketDeadlineNative.showPicker === 'function'){
-         ticketDeadlineNative.showPicker()
+      const isOpen = ticketDeadlineCalendar.classList.contains('ticket-modal__calendar--open')
+      if(isOpen){
+         closeCalendar()
          return
       }
 
-      ticketDeadlineNative.focus()
-      ticketDeadlineNative.click()
+      renderCalendar()
+      openCalendar()
    })
 
-   ticketDeadlineNative?.addEventListener('change', () => {
-      if(!ticketDeadlineNative.value) return
-      ticketDeadline.value = formatIsoToDeadline(ticketDeadlineNative.value)
-      syncLengthCounter(ticketDeadline)
-      ticketDeadline.setCustomValidity('')
+   ticketCalendarPrev?.addEventListener('click', () => {
+      calendarState.visibleMonth = new Date(
+         calendarState.visibleMonth.getFullYear(),
+         calendarState.visibleMonth.getMonth() - 1,
+         1
+      )
+      renderCalendar()
    })
+
+    ticketCalendarNext?.addEventListener('click', () => {
+      calendarState.visibleMonth = new Date(
+         calendarState.visibleMonth.getFullYear(),
+         calendarState.visibleMonth.getMonth() + 1,
+         1
+      )
+      renderCalendar()
+   })
+
+   ticketModal?.addEventListener('click', (event) => {
+      if(!ticketDeadlineCalendar) return
+
+      const target = event.target
+      const clickedInsideDeadline = target instanceof Element
+         && (target.closest('#ticket-deadline-calendar') || target.closest('#ticket-deadline-button'))
+
+      if(!clickedInsideDeadline){
+         closeCalendar()
+      }
+   })
+
+   renderCalendar()
 }
 
 const getNextTicketId = (tickets) => {
@@ -773,15 +914,18 @@ if(ticketForm){
       const deadlineValue = ticketDeadline?.value.trim() || ''
       const isValidDeadline = /^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.([0-9]{4})$/.test(deadlineValue)
       const deadlineIso = parseDeadlineToIso(deadlineValue)
+      const parsedDeadlineDate = parseDeadlineToDate(deadlineValue)
 
-      if(deadlineValue && (!isValidDeadline || !deadlineIso) && ticketDeadline){
+      if(deadlineValue && (!isValidDeadline || !deadlineIso || !parsedDeadlineDate) && ticketDeadline){
          ticketDeadline.setCustomValidity('Bitte Deadline im Format TT.MM.JJJJ eingeben.')
          ticketDeadline.reportValidity()
          return
       }
 
-      if(deadlineIso && ticketDeadlineNative){
-         ticketDeadlineNative.value = deadlineIso
+      if(parsedDeadlineDate && isPastDate(parsedDeadlineDate) && ticketDeadline){
+         ticketDeadline.setCustomValidity('Deadline muss heute oder in der Zukunft liegen.')
+         ticketDeadline.reportValidity()
+         return
       }
 
       if(!ticketForm.checkValidity()){

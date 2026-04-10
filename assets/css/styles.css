@@ -430,12 +430,88 @@ a {
   outline-offset: 1px;
 }
 
-.ticket-modal__deadline-native {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  width: 0;
-  height: 0;
+.ticket-modal__calendar {
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: .6rem;
+  background: rgba(255, 255, 255, .05);
+  padding: .8rem;
+  display: none;
+  gap: .55rem;
+}
+
+.ticket-modal__calendar--open {
+  display: grid;
+}
+
+.ticket-modal__calendar-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .5rem;
+}
+
+.ticket-modal__calendar-title {
+  text-align: center;
+  text-transform: capitalize;
+  font-size: .88rem;
+  letter-spacing: .04em;
+}
+
+.ticket-modal__calendar-nav {
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: .4rem;
+  background: rgba(255, 255, 255, .08);
+  color: var(--white-color);
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.ticket-modal__calendar-weekdays,
+.ticket-modal__calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: .25rem;
+}
+
+.ticket-modal__calendar-weekdays span {
+  text-align: center;
+  font-size: .7rem;
+  color: rgba(255, 255, 255, .55);
+  text-transform: uppercase;
+}
+
+.ticket-modal__calendar-day,
+.ticket-modal__calendar-empty {
+  min-height: 2rem;
+}
+
+.ticket-modal__calendar-day {
+  border: 1px solid rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .06);
+  color: var(--white-color);
+  border-radius: .35rem;
+  cursor: pointer;
+}
+
+.ticket-modal__calendar-day:hover {
+  background: rgba(255, 255, 255, .16);
+}
+
+.ticket-modal__calendar-day:disabled {
+  cursor: not-allowed;
+  opacity: .35;
+  background: rgba(255, 255, 255, .03);
+}
+
+.ticket-modal__calendar-day--selected {
+  background: var(--white-color);
+  color: var(--black-color);
+  border-color: var(--white-color);
+}
+
+.ticket-modal__calendar-day--today {
+  border-color: rgba(255, 255, 255, .55);
 }
 
 .ticket-modal__helper {
