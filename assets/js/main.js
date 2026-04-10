@@ -20,6 +20,7 @@ if(navClose){
 /*=============== LOGIN MODAL ===============*/
 const loginOpen = document.getElementById('nav-login'),
    ticketOpen = document.getElementById('nav-new-ticket'),
+   allTicketsItem = document.getElementById('nav-all-tickets-item'),
       authModal = document.getElementById('auth-modal'),
       authClose = document.getElementById('auth-close'),
       authForm = document.getElementById('auth-form'),
@@ -447,14 +448,16 @@ const users = [
       lastName: 'Asztalos',
       username: 'armand',
       email: 'armand.patrick.asztalos@tha.de',
-      password: '7Gt!kL9$mP2#qR'
+      password: '7Gt!kL9$mP2#qR',
+      isAdmin: true
    },
    {
       firstName: 'Ibrahim',
       lastName: 'Ghalem',
       username: 'ibrahim',
       email: 'ibrahim.ghalem@tha.de',
-      password: 'vX4&zN6@wF1?cJ'
+      password: 'vX4&zN6@wF1?cJ',
+      isAdmin: true
    }
 ]
 
@@ -465,6 +468,11 @@ const updateAuthButton = () => {
    if(!label) return
 
    label.textContent = currentUser ? 'Abmelden' : 'Anmelden'
+
+   if(allTicketsItem){
+      const canSeeAllTickets = Boolean(currentUser?.isAdmin)
+      allTicketsItem.hidden = !canSeeAllTickets
+   }
 }
 
 const getStoredTickets = () => {
