@@ -45,6 +45,11 @@ const loginOpen = document.getElementById('nav-login'),
    ticketForm = document.getElementById('ticket-form'),
    ticketMessage = document.getElementById('ticket-message-feedback'),
    ticketEmail = document.getElementById('ticket-email'),
+   ticketEmailVerification = document.getElementById('ticket-email-verification'),
+   ticketSendCodeButton = document.getElementById('ticket-send-code'),
+   ticketVerificationCode = document.getElementById('ticket-verification-code'),
+   ticketVerifyCodeButton = document.getElementById('ticket-verify-code'),
+   ticketVerificationMessage = document.getElementById('ticket-verification-message'),
    ticketDeadline = document.getElementById('ticket-deadline'),
    ticketDeadlineButton = document.getElementById('ticket-deadline-button'),
    ticketDeadlineCalendar = document.getElementById('ticket-deadline-calendar'),
@@ -77,10 +82,20 @@ const TICKET_STATUS_IN_PROGRESS = 'in-bearbeitung'
 const TICKET_STATUS_DONE = 'geschlossen'
 const AUTH_SESSION_STORAGE_KEY = 'swiss_auth_session'
 const AUTH_SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
+const EMAIL_VERIFICATION_COOLDOWN_MS = 60 * 1000
+const EMAIL_VERIFICATION_CODE_PATTERN = /^\d{6}$/
+const EMAIL_VERIFICATION_STORAGE_PREFIX = 'swiss_ticket_email_cooldown_'
+const TICKET_VERIFICATION_FUNCTION_URL = (window.SWISS_TICKET_EMAIL_CODE_URL || `${SUPABASE_URL}/functions/v1/ticket-email-code`).trim()
 const ASSIGNMENT_VALUES = ['egal', 'armand', 'ibrahim']
 const PRIORITY_VALUES = ['niedrig', 'mittel', 'hoch']
 const STATUS_VALUES = [TICKET_STATUS_OPEN, TICKET_STATUS_IN_PROGRESS, TICKET_STATUS_DONE, 'erledigt']
 const SQL_INJECTION_PATTERN = /(--|;|\/\*|\*\/|\b(drop|alter|truncate|insert|delete|update|select|union|exec|execute)\b)/i
+
+let emailVerificationState = {
+   email: '',
+   verified: false,
+   cooldownUntil: 0
+}
 
 const countryCallingCodes = [
    { country: 'Afghanistan', code: '+93' },
@@ -1107,6 +1122,231 @@ const validateAndSanitizeTicketPayload = (payload) => {
    }
 }
 
+const isValidThaEmailAddress = (emailValue) => {
+   return /^[^\s@]+@tha\.de$/i.test(emailValue)
+}
+
+const normalizeEmail = (emailValue) => {
+   return sanitizeTextInput((emailValue || '').toLowerCase(), 120)
+}
+
+const getCooldownStorageKey = (emailValue) => {
+   return `${EMAIL_VERIFICATION_STORAGE_PREFIX}${normalizeEmail(emailValue)}`
+}
+
+const getEmailCooldownUntil = (emailValue) => {
+   const key = getCooldownStorageKey(emailValue)
+   const raw = localStorage.getItem(key)
+   if(!raw) return 0
+
+   const parsed = Number(raw)
+   if(Number.isNaN(parsed) || parsed < Date.now()){
+      localStorage.removeItem(key)
+      return 0
+   }
+
+   return parsed
+}
+
+const setEmailCooldownUntil = (emailValue, untilEpochMs) => {
+   if(!emailValue) return
+   localStorage.setItem(getCooldownStorageKey(emailValue), String(untilEpochMs))
+}
+
+const setTicketVerificationMessage = (message, isSuccess = false) => {
+   if(!ticketVerificationMessage) return
+
+   ticketVerificationMessage.textContent = message
+   ticketVerificationMessage.classList.toggle('ticket-modal__verification-message--success', isSuccess)
+}
+
+const resetEmailVerificationState = () => {
+   emailVerificationState = {
+      email: '',
+      verified: false,
+      cooldownUntil: 0
+   }
+
+   if(ticketVerificationCode){
+      ticketVerificationCode.value = ''
+   }
+
+   setTicketVerificationMessage('')
+}
+
+const updateEmailVerificationUiState = () => {
+   if(!ticketEmailVerification) return
+
+   const isEditMode = Boolean(editingTicketId)
+   ticketEmailVerification.hidden = isEditMode
+
+   if(isEditMode) return
+
+   const normalizedEmail = normalizeEmail(ticketEmail?.value || '')
+   const now = Date.now()
+   const persistedCooldown = normalizedEmail ? getEmailCooldownUntil(normalizedEmail) : 0
+   const cooldownUntil = Math.max(emailVerificationState.cooldownUntil, persistedCooldown)
+   const remainingMs = Math.max(0, cooldownUntil - now)
+   const remainingSec = Math.ceil(remainingMs / 1000)
+   const hasValidEmail = isValidThaEmailAddress(normalizedEmail)
+   const verifiedForCurrentEmail = emailVerificationState.verified && emailVerificationState.email === normalizedEmail
+
+   if(ticketSendCodeButton){
+      ticketSendCodeButton.disabled = !hasValidEmail || remainingMs > 0
+      ticketSendCodeButton.textContent = remainingMs > 0 ? `Nochmal in ${remainingSec}s` : 'Code senden'
+   }
+
+   if(ticketVerifyCodeButton){
+      const enteredCode = (ticketVerificationCode?.value || '').trim()
+      ticketVerifyCodeButton.disabled = !hasValidEmail || !EMAIL_VERIFICATION_CODE_PATTERN.test(enteredCode)
+      ticketVerifyCodeButton.textContent = verifiedForCurrentEmail ? 'Verifiziert' : 'Code bestätigen'
+   }
+}
+
+const callTicketVerificationFunction = async (action, payload) => {
+   if(!TICKET_VERIFICATION_FUNCTION_URL){
+      return {
+         ok: false,
+         message: 'Verifizierungsservice ist nicht konfiguriert.'
+      }
+   }
+
+   try{
+      const response = await fetch(TICKET_VERIFICATION_FUNCTION_URL, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+         },
+         body: JSON.stringify({
+            action,
+            ...payload
+         })
+      })
+
+      const body = await response.json().catch(() => ({}))
+
+      if(!response.ok || !body?.success){
+         return {
+            ok: false,
+            message: body?.message || 'Verifizierung fehlgeschlagen.'
+         }
+      }
+
+      return {
+         ok: true,
+         data: body
+      }
+   }
+   catch{
+      return {
+         ok: false,
+         message: 'Verifizierungsservice derzeit nicht erreichbar.'
+      }
+   }
+}
+
+const sendTicketVerificationCode = async () => {
+   const normalizedEmail = normalizeEmail(ticketEmail?.value || '')
+
+   if(!isValidThaEmailAddress(normalizedEmail)){
+      setTicketVerificationMessage('Bitte zuerst eine gültige @tha.de E-Mail eingeben.')
+      updateEmailVerificationUiState()
+      return
+   }
+
+   const cooldownUntil = Math.max(getEmailCooldownUntil(normalizedEmail), emailVerificationState.cooldownUntil)
+   if(cooldownUntil > Date.now()){
+      setTicketVerificationMessage('Bitte kurz warten, bevor du erneut einen Code anforderst.')
+      updateEmailVerificationUiState()
+      return
+   }
+
+   if(ticketSendCodeButton){
+      ticketSendCodeButton.disabled = true
+      ticketSendCodeButton.textContent = 'Sende...'
+   }
+
+   const result = await callTicketVerificationFunction('send', {
+      email: normalizedEmail
+   })
+
+   if(!result.ok){
+      setTicketVerificationMessage(result.message || 'Code konnte nicht gesendet werden.')
+      updateEmailVerificationUiState()
+      return
+   }
+
+   const cooldownMs = Number(result.data?.cooldownMs)
+   const appliedCooldownMs = Number.isFinite(cooldownMs) && cooldownMs > 0
+      ? cooldownMs
+      : EMAIL_VERIFICATION_COOLDOWN_MS
+
+   emailVerificationState = {
+      email: normalizedEmail,
+      verified: false,
+      cooldownUntil: Date.now() + appliedCooldownMs
+   }
+
+   setEmailCooldownUntil(normalizedEmail, emailVerificationState.cooldownUntil)
+
+   if(ticketVerificationCode){
+      ticketVerificationCode.value = ''
+   }
+
+   setTicketVerificationMessage('Code wurde per E-Mail versendet.', true)
+   updateEmailVerificationUiState()
+}
+
+const verifyTicketCode = async () => {
+   const normalizedEmail = normalizeEmail(ticketEmail?.value || '')
+   const enteredCode = (ticketVerificationCode?.value || '').trim()
+
+   if(!isValidThaEmailAddress(normalizedEmail)){
+      setTicketVerificationMessage('Bitte zuerst eine gültige @tha.de E-Mail eingeben.')
+      updateEmailVerificationUiState()
+      return
+   }
+
+   if(!EMAIL_VERIFICATION_CODE_PATTERN.test(enteredCode)){
+      setTicketVerificationMessage('Bitte einen 6-stelligen Code eingeben.')
+      updateEmailVerificationUiState()
+      return
+   }
+
+   if(ticketVerifyCodeButton){
+      ticketVerifyCodeButton.disabled = true
+      ticketVerifyCodeButton.textContent = 'Prüfe...'
+   }
+
+   const result = await callTicketVerificationFunction('verify', {
+      email: normalizedEmail,
+      code: enteredCode
+   })
+
+   if(!result.ok){
+      emailVerificationState = {
+         ...emailVerificationState,
+         email: normalizedEmail,
+         verified: false
+      }
+
+      setTicketVerificationMessage(result.message || 'Code ist ungültig oder abgelaufen.')
+      updateEmailVerificationUiState()
+      return
+   }
+
+   emailVerificationState = {
+      ...emailVerificationState,
+      email: normalizedEmail,
+      verified: true
+   }
+
+   setTicketVerificationMessage('E-Mail erfolgreich verifiziert.', true)
+   updateEmailVerificationUiState()
+}
+
 const getStoredTickets = () => {
    return ticketsCache.map(normalizeTicket)
 }
@@ -1525,6 +1765,7 @@ const openTicketModal = () => {
 
    ticketFirstInput?.focus()
    ticketForm?.querySelectorAll('[maxlength]').forEach(syncLengthCounter)
+   updateEmailVerificationUiState()
 }
 
 const closeTicketModal = () => {
@@ -1558,8 +1799,45 @@ if(ticketOpen){
       editingTicketId = null
       setTicketFormMode(false)
       ticketForm?.reset()
+      resetEmailVerificationState()
       ticketForm?.querySelectorAll('[maxlength]').forEach(syncLengthCounter)
       openTicketModal()
+   })
+}
+
+if(ticketSendCodeButton){
+   ticketSendCodeButton.addEventListener('click', async () => {
+      await sendTicketVerificationCode()
+   })
+}
+
+if(ticketVerifyCodeButton){
+   ticketVerifyCodeButton.addEventListener('click', async () => {
+      await verifyTicketCode()
+   })
+}
+
+if(ticketVerificationCode){
+   ticketVerificationCode.addEventListener('input', () => {
+      const digitsOnly = ticketVerificationCode.value.replace(/\D/g, '').slice(0, 6)
+      ticketVerificationCode.value = digitsOnly
+      updateEmailVerificationUiState()
+   })
+}
+
+if(ticketEmail){
+   ticketEmail.addEventListener('input', () => {
+      const normalizedEmail = normalizeEmail(ticketEmail.value)
+      if(normalizedEmail !== emailVerificationState.email && emailVerificationState.verified){
+         emailVerificationState = {
+            email: normalizedEmail,
+            verified: false,
+            cooldownUntil: Math.max(emailVerificationState.cooldownUntil, getEmailCooldownUntil(normalizedEmail))
+         }
+         setTicketVerificationMessage('E-Mail geändert. Bitte neuen Code bestätigen.')
+      }
+
+      updateEmailVerificationUiState()
    })
 }
 
@@ -1769,6 +2047,21 @@ if(ticketForm){
          return
       }
 
+      if(!editingTicketId){
+         const normalizedEmail = normalizeEmail(emailValue)
+         const emailVerified = emailVerificationState.verified && emailVerificationState.email === normalizedEmail
+
+         if(!emailVerified){
+            setTicketVerificationMessage('Bitte E-Mail-Code bestätigen, bevor das Ticket erstellt wird.')
+            if(ticketMessage){
+               ticketMessage.textContent = 'Ticket blockiert: E-Mail-Verifizierung fehlt.'
+               ticketMessage.classList.remove('ticket-modal__message--success')
+            }
+            updateEmailVerificationUiState()
+            return
+         }
+      }
+
       await loadTicketsFromDatabase()
       const storedTickets = getStoredTickets()
       const now = new Date()
@@ -1870,6 +2163,7 @@ if(ticketForm){
       }
 
       ticketForm.reset()
+      resetEmailVerificationState()
       ticketForm.querySelectorAll('[maxlength]').forEach(syncLengthCounter)
       editingTicketId = null
       setTicketFormMode(false)
@@ -1886,6 +2180,8 @@ initializeLengthCounters()
 initializeDeadlineInput()
 initializeBoardPullToRefresh()
 setTicketFormMode(false)
+resetEmailVerificationState()
+updateEmailVerificationUiState()
 showHomeView()
 hydrateUserSession()
 updateAuthButton()
@@ -1899,3 +2195,5 @@ document.addEventListener('visibilitychange', () => {
       enforceSessionExpiry()
    }
 })
+
+setInterval(updateEmailVerificationUiState, 1000)

@@ -191,6 +191,26 @@
                   required
                >
 
+               <div class="ticket-modal__verification" id="ticket-email-verification">
+                  <p class="ticket-modal__verification-title">E-Mail-Verifizierung gegen Spam</p>
+                  <div class="ticket-modal__verification-row">
+                     <button type="button" class="ticket-modal__verification-button" id="ticket-send-code">Code senden</button>
+                     <input
+                        class="ticket-modal__input ticket-modal__verification-code"
+                        id="ticket-verification-code"
+                        name="verificationCode"
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        placeholder="6-stelliger Code"
+                        pattern="^[0-9]{6}$"
+                        maxlength="6"
+                     >
+                     <button type="button" class="ticket-modal__verification-button" id="ticket-verify-code">Code bestätigen</button>
+                  </div>
+                  <p class="ticket-modal__verification-message" id="ticket-verification-message" aria-live="polite"></p>
+               </div>
+
                <label class="ticket-modal__field" for="ticket-number">Nummer (optional)</label>
                <div class="ticket-modal__phone-row">
                   <select class="ticket-modal__input ticket-modal__country-code" id="ticket-country-code" name="phoneCountryCode" aria-label="Ländervorwahl">
