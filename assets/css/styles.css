@@ -810,9 +810,9 @@ main {
 }
 
 .ticket-modal__verification {
-  border: 1px solid rgba(255, 255, 255, .17);
+  border: 1px solid #ffffff;
   border-radius: .55rem;
-  background: rgba(255, 255, 255, .04);
+  background: #000000;
   padding: .7rem;
   display: grid;
   gap: .55rem;
@@ -822,7 +822,7 @@ main {
   font-size: .78rem;
   letter-spacing: .04em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, .8);
+  color: #ffffff;
 }
 
 .ticket-modal__verification-row {
@@ -833,9 +833,9 @@ main {
 }
 
 .ticket-modal__verification-button {
-  border: 1px solid rgba(255, 255, 255, .3);
-  background: rgba(255, 255, 255, .09);
-  color: var(--white-color);
+  border: 1px solid #ffffff;
+  background: #000000;
+  color: #ffffff;
   border-radius: .4rem;
   min-height: 2.9rem;
   padding: .55rem .75rem;
@@ -851,6 +851,9 @@ main {
 }
 
 .ticket-modal__verification-code {
+  border: 1px solid #ffffff;
+  background: #000000;
+  color: #ffffff;
   text-align: center;
   letter-spacing: .14em;
 }
@@ -858,7 +861,7 @@ main {
 .ticket-modal__verification-message {
   min-height: 1.1rem;
   font-size: .82rem;
-  color: #ffb4b4;
+  color: #ffffff;
 }
 
 .ticket-modal__verification-message--success {
