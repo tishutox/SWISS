@@ -119,13 +119,16 @@
 
             <form class="ticket-modal__form" id="ticket-form" novalidate>
                <label class="ticket-modal__field" for="ticket-firstname">Vorname*</label>
-               <input class="ticket-modal__input" id="ticket-firstname" name="firstName" type="text" required>
+               <input class="ticket-modal__input" id="ticket-firstname" name="firstName" type="text" maxlength="30" required>
+               <p class="ticket-modal__counter" data-counter-for="ticket-firstname" aria-live="polite">0/30</p>
 
                <label class="ticket-modal__field" for="ticket-lastname">Nachname*</label>
-               <input class="ticket-modal__input" id="ticket-lastname" name="lastName" type="text" required>
+               <input class="ticket-modal__input" id="ticket-lastname" name="lastName" type="text" maxlength="30" required>
+               <p class="ticket-modal__counter" data-counter-for="ticket-lastname" aria-live="polite">0/30</p>
 
                <label class="ticket-modal__field" for="ticket-nickname">Spitzname*</label>
-               <input class="ticket-modal__input" id="ticket-nickname" name="nickName" type="text" required>
+               <input class="ticket-modal__input" id="ticket-nickname" name="nickName" type="text" maxlength="15" required>
+               <p class="ticket-modal__counter" data-counter-for="ticket-nickname" aria-live="polite">0/15</p>
 
                <label class="ticket-modal__field" for="ticket-email">E-Mail (@tha.de)*</label>
                <input
@@ -139,7 +142,12 @@
                >
 
                <label class="ticket-modal__field" for="ticket-number">Nummer (optional)</label>
-               <input class="ticket-modal__input" id="ticket-number" name="phoneNumber" type="tel" inputmode="tel">
+               <div class="ticket-modal__phone-row">
+                  <select class="ticket-modal__input ticket-modal__country-code" id="ticket-country-code" name="phoneCountryCode" aria-label="Ländervorwahl">
+                     <option value="+49" selected>Deutschland (+49)</option>
+                  </select>
+                  <input class="ticket-modal__input" id="ticket-number" name="phoneNumber" type="tel" inputmode="tel">
+               </div>
 
                <label class="ticket-modal__field" for="ticket-discord">Discord-Username (optional)</label>
                <input class="ticket-modal__input" id="ticket-discord" name="discord" type="text">
@@ -153,9 +161,11 @@
 
                <label class="ticket-modal__field" for="ticket-title-input">Titel* (max. 30 Zeichen)</label>
                <input class="ticket-modal__input" id="ticket-title-input" name="title" type="text" maxlength="30" required>
+               <p class="ticket-modal__counter" data-counter-for="ticket-title-input" aria-live="polite">0/30</p>
 
                <label class="ticket-modal__field" for="ticket-message">Nachricht* (max. 5000 Zeichen)</label>
                <textarea class="ticket-modal__input ticket-modal__textarea" id="ticket-message" name="message" maxlength="5000" required></textarea>
+               <p class="ticket-modal__counter" data-counter-for="ticket-message" aria-live="polite">0/5000</p>
 
                <label class="ticket-modal__field" for="ticket-priority">Dringlichkeit*</label>
                <select class="ticket-modal__input" id="ticket-priority" name="priority" required>
@@ -164,6 +174,9 @@
                   <option value="mittel">Mittel</option>
                   <option value="hoch">Hoch</option>
                </select>
+
+               <label class="ticket-modal__field" for="ticket-deadline">DEADLINE (optional)</label>
+               <input class="ticket-modal__input" id="ticket-deadline" name="deadline" type="date">
 
                <label class="ticket-modal__field" for="ticket-assignment">Zuweisung</label>
                <select class="ticket-modal__input" id="ticket-assignment" name="assignment">
