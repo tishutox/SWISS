@@ -1215,6 +1215,10 @@ if(allTicketsLink){
       event.preventDefault()
       if(!currentUser?.isAdmin) return
 
+      if(navMenu){
+         navMenu.classList.remove('show-menu')
+      }
+
       if(boardViewActive){
          showHomeView()
       }

@@ -46,6 +46,7 @@ body {
   color: var(--white-color);
   background-color: #111111;
   min-height: 100dvh;
+  overflow-x: hidden;
 }
 
 ul {
@@ -327,12 +328,13 @@ main {
 .ticket-detail-modal__panel {
   position: relative;
   z-index: 1;
-  min-height: 100dvh;
+  height: 100dvh;
   width: 100%;
   background-color: #141414;
   color: var(--white-color);
   padding: 5.5rem 1.5rem 2rem;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ticket-detail-modal__close {
@@ -419,7 +421,7 @@ main {
 .auth-modal__panel {
   position: relative;
   z-index: 1;
-  min-height: 100dvh;
+  height: 100dvh;
   width: 100%;
   background-color: #141414;
   color: var(--white-color);
@@ -428,6 +430,8 @@ main {
   flex-direction: column;
   justify-content: center;
   gap: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .auth-modal__close {
@@ -525,7 +529,7 @@ main {
 .ticket-modal__panel {
   position: relative;
   z-index: 1;
-  min-height: 100dvh;
+  height: 100dvh;
   width: 100%;
   background-color: #141414;
   color: var(--white-color);
@@ -534,6 +538,7 @@ main {
   flex-direction: column;
   gap: 1rem;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ticket-modal__close {
