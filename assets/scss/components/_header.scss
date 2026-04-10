@@ -62,12 +62,6 @@
          &:nth-child(3){
             transition-delay: .3s;
          }
-         &:nth-child(4){
-            transition-delay: .4s;
-         }
-         &:nth-child(5){
-            transition-delay: .5s;
-         }
       }
    }
    &__list,
@@ -87,16 +81,8 @@
       align-items: center;
       transition: opacity .4s;
 
-      & i{
-         font-size: 2rem;
-         position: absolute;
-         opacity: 0;
-         visibility: hidden;
-         transition: opacity .4s, visibility .4s;
-      }
       & span{
          position: relative;
-         transition: margin .4s;
 
          &::after{
             content: '';
@@ -112,13 +98,6 @@
    }
    // Animation link on hover
    &__link{
-      &:hover span{
-         margin-left: 2.5rem;
-      }
-      &:hover i{
-         opacity: 1;
-         visibility: visible;
-      }
       &:hover span::after{
          width: 100%;
       }

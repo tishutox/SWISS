@@ -133,12 +133,6 @@ a {
   .nav__item:nth-child(3) {
     transition-delay: .3s;
   }
-  .nav__item:nth-child(4) {
-    transition-delay: .4s;
-  }
-  .nav__item:nth-child(5) {
-    transition-delay: .5s;
-  }
 }
 
 .nav__list, 
@@ -161,17 +155,8 @@ a {
   transition: opacity .4s;
 }
 
-.nav__link i {
-  font-size: 2rem;
-  position: absolute;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity .4s, visibility .4s;
-}
-
 .nav__link span {
   position: relative;
-  transition: margin .4s;
 }
 
 .nav__link span::after {
@@ -183,16 +168,6 @@ a {
   height: 2px;
   background-color: var(--white-color);
   transition: width .4s ease-out;
-}
-
-/* Animation link on hover */
-.nav__link:hover span {
-  margin-left: 2.5rem;
-}
-
-.nav__link:hover i {
-  opacity: 1;
-  visibility: visible;
 }
 
 .nav__link:hover span::after {
