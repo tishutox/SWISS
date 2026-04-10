@@ -208,6 +208,185 @@ a {
   transform: translateX(0);
 }
 
+/*=============== MAIN CONTENT ===============*/
+main {
+  padding-top: calc(var(--header-height) + 2rem);
+}
+
+.home {
+  padding: 1.5rem 0 2rem;
+}
+
+.home__container {
+  border: 1px solid rgba(0, 0, 0, .12);
+  border-radius: .75rem;
+  padding: 1.2rem;
+}
+
+.home__title {
+  font-size: 1.3rem;
+  margin-bottom: .35rem;
+}
+
+.home__subtitle {
+  color: rgba(0, 0, 0, .65);
+}
+
+.ticket-board {
+  display: grid;
+  gap: 1rem;
+  padding-bottom: 2rem;
+}
+
+.ticket-board__column {
+  border: 1px solid rgba(0, 0, 0, .14);
+  border-radius: .75rem;
+  padding: .85rem;
+  background: #f8f8f8;
+}
+
+.ticket-board__title {
+  margin-bottom: .8rem;
+  font-size: .95rem;
+  letter-spacing: .06em;
+}
+
+.ticket-board__list {
+  display: grid;
+  gap: .6rem;
+}
+
+.ticket-card {
+  border: 1px solid rgba(0, 0, 0, .12);
+  border-radius: .55rem;
+  background: var(--white-color);
+  padding: .7rem .8rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ticket-card__meta {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: .55rem;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: .75rem;
+}
+
+.ticket-card__title {
+  max-width: 11.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(0, 0, 0, .82);
+}
+
+.ticket-card__assignment,
+.ticket-card__marker {
+  color: rgba(0, 0, 0, .58);
+}
+
+.ticket-board__empty {
+  border: 1px dashed rgba(0, 0, 0, .2);
+  border-radius: .45rem;
+  padding: .6rem;
+  font-size: .82rem;
+  color: rgba(0, 0, 0, .5);
+}
+
+/*=============== TICKET DETAIL MODAL ===============*/
+.ticket-detail-modal {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-fixed) + 20);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+}
+
+.ticket-detail-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .75);
+}
+
+.ticket-detail-modal__panel {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  width: 100%;
+  background: linear-gradient(180deg, #0a0a0a 0%, #171717 100%);
+  color: var(--white-color);
+  padding: 5.5rem 1.5rem 2rem;
+  overflow-y: auto;
+}
+
+.ticket-detail-modal__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--white-color);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.ticket-detail-modal__title {
+  margin-bottom: 1rem;
+}
+
+.ticket-detail-modal__content {
+  display: grid;
+  gap: .65rem;
+}
+
+.ticket-detail-modal__row {
+  display: grid;
+  gap: .2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  padding-bottom: .4rem;
+}
+
+.ticket-detail-modal__label {
+  font-size: .76rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .6);
+}
+
+.ticket-detail-modal__value {
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.ticket-detail-modal__actions {
+  margin-top: 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .7rem;
+}
+
+.ticket-detail-modal__button {
+  border: 1px solid rgba(255, 255, 255, .34);
+  background: rgba(255, 255, 255, .05);
+  color: var(--white-color);
+  border-radius: .45rem;
+  padding: .75rem .9rem;
+  cursor: pointer;
+}
+
+.ticket-detail-modal__button--primary {
+  background: var(--white-color);
+  color: var(--black-color);
+  border-color: var(--white-color);
+}
+
+.show-ticket-detail-modal {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /*=============== LOGIN MODAL ===============*/
 .auth-modal {
   position: fixed;
@@ -596,6 +775,19 @@ a {
     padding: 3.5rem 2.5rem 2.25rem;
   }
 
+  .ticket-detail-modal {
+    display: grid;
+    place-items: center;
+  }
+
+  .ticket-detail-modal__panel {
+    min-height: auto;
+    width: min(100%, 44rem);
+    max-height: calc(100dvh - 4rem);
+    border-radius: .75rem;
+    padding: 3.5rem 2.5rem 2.25rem;
+  }
+
   .nav {
     height: calc(var(--header-height) + 2rem);
   }
@@ -622,6 +814,10 @@ a {
     display: flex;
     align-items: center;
     column-gap: 3.5rem;
+  }
+
+  .ticket-board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

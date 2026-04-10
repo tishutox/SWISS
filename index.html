@@ -65,8 +65,48 @@
 
       <!--==================== MAIN ====================-->
       <main>
-         <!-- Insert page sections -->
+         <section class="home" id="home-content">
+            <div class="home__container container">
+               <h1 class="home__title">SWISS Ticket Portal</h1>
+               <p class="home__subtitle">Melde dein Anliegen ueber Neues Ticket. Admins finden die Kanban-Uebersicht unter ALLE TICKETS.</p>
+            </div>
+         </section>
+
+         <section class="ticket-board container" id="admin-ticket-board" hidden>
+            <div class="ticket-board__column">
+               <h3 class="ticket-board__title">OFFEN</h3>
+               <div class="ticket-board__list" id="ticket-column-offen"></div>
+            </div>
+
+            <div class="ticket-board__column">
+               <h3 class="ticket-board__title">IN BEARBEITUNG</h3>
+               <div class="ticket-board__list" id="ticket-column-in-bearbeitung"></div>
+            </div>
+
+            <div class="ticket-board__column">
+               <h3 class="ticket-board__title">ERLEDIGT</h3>
+               <div class="ticket-board__list" id="ticket-column-erledigt"></div>
+            </div>
+         </section>
       </main>
+
+      <div class="ticket-detail-modal" id="ticket-detail-modal" aria-hidden="true">
+         <div class="ticket-detail-modal__backdrop" data-ticket-detail-close></div>
+
+         <section class="ticket-detail-modal__panel" role="dialog" aria-modal="true" aria-labelledby="ticket-detail-title">
+            <button type="button" class="ticket-detail-modal__close" id="ticket-detail-close" aria-label="Ticketdetails schliessen">
+               <i class="ri-close-large-line"></i>
+            </button>
+
+            <h2 class="ticket-detail-modal__title" id="ticket-detail-title">TICKET DETAILS</h2>
+            <div class="ticket-detail-modal__content" id="ticket-detail-content"></div>
+
+            <div class="ticket-detail-modal__actions">
+               <button type="button" class="ticket-detail-modal__button" id="ticket-detail-edit">Bearbeiten</button>
+               <button type="button" class="ticket-detail-modal__button ticket-detail-modal__button--primary" id="ticket-detail-complete">Abschliessen</button>
+            </div>
+         </section>
+      </div>
 
       <!--==================== LOGIN MODAL ====================-->
       <div class="auth-modal" id="auth-modal" aria-hidden="true">

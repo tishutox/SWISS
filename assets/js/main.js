@@ -21,6 +21,17 @@ if(navClose){
 const loginOpen = document.getElementById('nav-login'),
    ticketOpen = document.getElementById('nav-new-ticket'),
    allTicketsItem = document.getElementById('nav-all-tickets-item'),
+   allTicketsLink = document.getElementById('nav-all-tickets'),
+   homeContent = document.getElementById('home-content'),
+   adminTicketBoard = document.getElementById('admin-ticket-board'),
+   ticketColumnOffen = document.getElementById('ticket-column-offen'),
+   ticketColumnInBearbeitung = document.getElementById('ticket-column-in-bearbeitung'),
+   ticketColumnErledigt = document.getElementById('ticket-column-erledigt'),
+   ticketDetailModal = document.getElementById('ticket-detail-modal'),
+   ticketDetailClose = document.getElementById('ticket-detail-close'),
+   ticketDetailContent = document.getElementById('ticket-detail-content'),
+   ticketDetailEdit = document.getElementById('ticket-detail-edit'),
+   ticketDetailComplete = document.getElementById('ticket-detail-complete'),
       authModal = document.getElementById('auth-modal'),
       authClose = document.getElementById('auth-close'),
       authForm = document.getElementById('auth-form'),
@@ -40,11 +51,20 @@ const loginOpen = document.getElementById('nav-login'),
    ticketCalendarTitle = document.getElementById('ticket-calendar-title'),
    ticketCalendarDays = document.getElementById('ticket-calendar-days'),
    ticketCountryCode = document.getElementById('ticket-country-code'),
-   ticketFirstInput = document.getElementById('ticket-firstname')
+   ticketFirstInput = document.getElementById('ticket-firstname'),
+   ticketTitleHeading = document.getElementById('ticket-title'),
+   ticketSubtitle = document.querySelector('.ticket-modal__subtitle'),
+   ticketSubmitButton = ticketForm?.querySelector('.ticket-modal__submit')
 
 let currentUser = null
+let boardViewActive = false
+let activeTicketId = null
+let editingTicketId = null
 
 const TICKETS_STORAGE_KEY = 'swiss_tickets'
+const TICKET_STATUS_OPEN = 'offen'
+const TICKET_STATUS_IN_PROGRESS = 'in-bearbeitung'
+const TICKET_STATUS_DONE = 'erledigt'
 
 const countryCallingCodes = [
    { country: 'Afghanistan', code: '+93' },
@@ -472,7 +492,219 @@ const updateAuthButton = () => {
    if(allTicketsItem){
       const canSeeAllTickets = Boolean(currentUser?.isAdmin)
       allTicketsItem.hidden = !canSeeAllTickets
+
+      if(!canSeeAllTickets){
+         boardViewActive = false
+         allTicketsLink?.querySelector('span')?.replaceChildren('Alle Tickets')
+         homeContent?.removeAttribute('hidden')
+         adminTicketBoard?.setAttribute('hidden', 'true')
+      }
    }
+}
+
+const setTicketFormMode = (isEditMode) => {
+   if(ticketTitleHeading){
+      ticketTitleHeading.textContent = isEditMode ? 'TICKET BEARBEITEN' : 'NEUES TICKET'
+   }
+
+   if(ticketSubtitle){
+      ticketSubtitle.textContent = isEditMode
+         ? 'Ticketdaten aktualisieren und speichern.'
+         : 'Bitte alle Pflichtfelder ausfüllen.'
+   }
+
+   if(ticketSubmitButton){
+      ticketSubmitButton.textContent = isEditMode ? 'SPEICHERN' : 'TICKET ERSTELLEN'
+   }
+}
+
+const normalizeTicket = (ticket) => {
+   const status = ticket?.status || TICKET_STATUS_OPEN
+   return {
+      ...ticket,
+      status
+   }
+}
+
+const getTicketDisplayMarker = (ticket) => {
+   if(ticket.deadline){
+      return ticket.deadline
+   }
+
+   const priorityMap = {
+      niedrig: 'NIEDRIG',
+      mittel: 'MITTEL',
+      hoch: 'HOCH'
+   }
+
+   return priorityMap[ticket.priority] || 'OHNE PRIO'
+}
+
+const getAssignmentLabel = (ticket) => {
+   if(!ticket.assignment || ticket.assignment === 'egal') return 'Egal'
+   return ticket.assignment
+}
+
+const truncateTitle = (title) => {
+   if(title.length <= 26) return title
+   return `${title.slice(0, 26)}...`
+}
+
+const sortNewestFirst = (tickets) => {
+   return [...tickets].sort((a, b) => {
+      const firstTime = Date.parse(b.createdAt || '') || 0
+      const secondTime = Date.parse(a.createdAt || '') || 0
+      return firstTime - secondTime
+   })
+}
+
+const renderColumn = (columnElement, tickets) => {
+   if(!columnElement) return
+
+   columnElement.innerHTML = ''
+
+   if(tickets.length === 0){
+      const empty = document.createElement('p')
+      empty.className = 'ticket-board__empty'
+      empty.textContent = 'Keine Tickets vorhanden.'
+      columnElement.append(empty)
+      return
+   }
+
+   tickets.forEach((ticket) => {
+      const card = document.createElement('button')
+      card.type = 'button'
+      card.className = 'ticket-card'
+      card.dataset.ticketId = String(ticket.ticketId)
+
+      const meta = document.createElement('span')
+      meta.className = 'ticket-card__meta'
+
+      const marker = document.createElement('span')
+      marker.className = 'ticket-card__marker'
+      marker.textContent = getTicketDisplayMarker(ticket)
+
+      const assignment = document.createElement('span')
+      assignment.className = 'ticket-card__assignment'
+      assignment.textContent = getAssignmentLabel(ticket)
+
+      const title = document.createElement('span')
+      title.className = 'ticket-card__title'
+      title.textContent = truncateTitle(ticket.title || 'Ohne Titel')
+
+      meta.append(marker, assignment, title)
+      card.append(meta)
+      columnElement.append(card)
+   })
+}
+
+const renderTicketBoard = () => {
+   const storedTickets = sortNewestFirst(getStoredTickets())
+
+   const openTickets = storedTickets.filter((ticket) => ticket.status === TICKET_STATUS_OPEN)
+   const progressTickets = storedTickets.filter((ticket) => ticket.status === TICKET_STATUS_IN_PROGRESS)
+   const doneTickets = storedTickets.filter((ticket) => ticket.status === TICKET_STATUS_DONE)
+
+   renderColumn(ticketColumnOffen, openTickets)
+   renderColumn(ticketColumnInBearbeitung, progressTickets)
+   renderColumn(ticketColumnErledigt, doneTickets)
+}
+
+const showBoardView = () => {
+   if(!currentUser?.isAdmin) return
+   boardViewActive = true
+   homeContent?.setAttribute('hidden', 'true')
+   adminTicketBoard?.removeAttribute('hidden')
+   allTicketsLink?.querySelector('span')?.replaceChildren('STARTSEITE')
+   renderTicketBoard()
+}
+
+const showHomeView = () => {
+   boardViewActive = false
+   homeContent?.removeAttribute('hidden')
+   adminTicketBoard?.setAttribute('hidden', 'true')
+   allTicketsLink?.querySelector('span')?.replaceChildren('Alle Tickets')
+}
+
+const fillTicketDetail = (ticket) => {
+   if(!ticketDetailContent) return
+
+   const detailRows = [
+      ['Ticket-ID', `#${ticket.ticketId || '-'}`],
+      ['Status', ticket.status || TICKET_STATUS_OPEN],
+      ['Erstellt am', `${ticket.createdDate || '-'} ${ticket.createdTime || ''}`.trim()],
+      ['Vorname', ticket.firstName || '-'],
+      ['Nachname', ticket.lastName || '-'],
+      ['Spitzname', ticket.nickName || '-'],
+      ['E-Mail', ticket.email || '-'],
+      ['Telefon', ticket.phoneNumberFull || '-'],
+      ['Discord', ticket.discord || '-'],
+      ['Modul', ticket.module || '-'],
+      ['Titel', ticket.title || '-'],
+      ['Nachricht', ticket.message || '-'],
+      ['Dringlichkeit', ticket.priority || '-'],
+      ['Deadline', ticket.deadline || '-'],
+      ['Zuweisung', ticket.assignment || '-']
+   ]
+
+   ticketDetailContent.innerHTML = ''
+
+   detailRows.forEach(([label, value]) => {
+      const row = document.createElement('div')
+      row.className = 'ticket-detail-modal__row'
+
+      const labelElement = document.createElement('span')
+      labelElement.className = 'ticket-detail-modal__label'
+      labelElement.textContent = label
+
+      const valueElement = document.createElement('span')
+      valueElement.className = 'ticket-detail-modal__value'
+      valueElement.textContent = value
+
+      row.append(labelElement, valueElement)
+      ticketDetailContent.append(row)
+   })
+}
+
+const openTicketDetailModal = (ticketId) => {
+   const tickets = getStoredTickets()
+   const ticket = tickets.find((entry) => Number(entry.ticketId) === Number(ticketId))
+   if(!ticket || !ticketDetailModal) return
+
+   activeTicketId = Number(ticketId)
+   fillTicketDetail(ticket)
+   ticketDetailModal.classList.add('show-ticket-detail-modal')
+   ticketDetailModal.setAttribute('aria-hidden', 'false')
+   syncBodyModalState()
+}
+
+const closeTicketDetailModal = () => {
+   if(!ticketDetailModal) return
+
+   ticketDetailModal.classList.remove('show-ticket-detail-modal')
+   ticketDetailModal.setAttribute('aria-hidden', 'true')
+   activeTicketId = null
+   syncBodyModalState()
+}
+
+const fillTicketFormForEdit = (ticket) => {
+   if(!ticketForm) return
+
+   ticketForm.elements.firstName.value = ticket.firstName || ''
+   ticketForm.elements.lastName.value = ticket.lastName || ''
+   ticketForm.elements.nickName.value = ticket.nickName || ''
+   ticketForm.elements.email.value = ticket.email || ''
+   ticketForm.elements.phoneCountryCode.value = ticket.phoneCountryCode || '+49'
+   ticketForm.elements.phoneNumber.value = ticket.phoneNumber || ''
+   ticketForm.elements.discord.value = ticket.discord || ''
+   ticketForm.elements.module.value = ticket.module || 'kein-modul'
+   ticketForm.elements.title.value = ticket.title || ''
+   ticketForm.elements.message.value = ticket.message || ''
+   ticketForm.elements.priority.value = ticket.priority || ''
+   ticketForm.elements.deadline.value = ticket.deadline || ''
+   ticketForm.elements.assignment.value = ticket.assignment || 'egal'
+
+   ticketForm.querySelectorAll('[maxlength]').forEach(syncLengthCounter)
 }
 
 const getStoredTickets = () => {
@@ -481,7 +713,7 @@ const getStoredTickets = () => {
       if(!rawTickets) return []
 
       const parsedTickets = JSON.parse(rawTickets)
-      return Array.isArray(parsedTickets) ? parsedTickets : []
+      return Array.isArray(parsedTickets) ? parsedTickets.map(normalizeTicket) : []
    }
    catch{
       return []
@@ -766,8 +998,9 @@ const getNextTicketId = (tickets) => {
 const syncBodyModalState = () => {
    const authOpen = authModal?.classList.contains('show-auth-modal')
    const ticketOpenState = ticketModal?.classList.contains('show-ticket-modal')
+   const detailOpenState = ticketDetailModal?.classList.contains('show-ticket-detail-modal')
 
-   document.body.classList.toggle('modal-open', Boolean(authOpen || ticketOpenState))
+   document.body.classList.toggle('modal-open', Boolean(authOpen || ticketOpenState || detailOpenState))
 }
 
 const openAuthModal = () => {
@@ -828,11 +1061,14 @@ if(loginOpen){
 
       if(currentUser){
          currentUser = null
+         editingTicketId = null
          authForm?.reset()
          if(authMessage){
             authMessage.textContent = ''
             authMessage.classList.remove('auth-modal__message--success')
          }
+         closeTicketDetailModal()
+         showHomeView()
          closeAuthModal()
          updateAuthButton()
          return
@@ -849,7 +1085,25 @@ if(authClose){
 if(ticketOpen){
    ticketOpen.addEventListener('click', (event) => {
       event.preventDefault()
+      editingTicketId = null
+      setTicketFormMode(false)
+      ticketForm?.reset()
+      ticketForm?.querySelectorAll('[maxlength]').forEach(syncLengthCounter)
       openTicketModal()
+   })
+}
+
+if(allTicketsLink){
+   allTicketsLink.addEventListener('click', (event) => {
+      event.preventDefault()
+      if(!currentUser?.isAdmin) return
+
+      if(boardViewActive){
+         showHomeView()
+      }
+      else{
+         showBoardView()
+      }
    })
 }
 
@@ -873,6 +1127,72 @@ if(ticketModal){
    })
 }
 
+if(ticketDetailModal){
+   ticketDetailModal.addEventListener('click', (event) => {
+      if(event.target.hasAttribute('data-ticket-detail-close')){
+         closeTicketDetailModal()
+      }
+   })
+}
+
+if(adminTicketBoard){
+   adminTicketBoard.addEventListener('click', (event) => {
+      const target = event.target
+      if(!(target instanceof Element)) return
+
+      const ticketCard = target.closest('.ticket-card')
+      if(!ticketCard) return
+
+      openTicketDetailModal(ticketCard.dataset.ticketId)
+   })
+}
+
+if(ticketDetailClose){
+   ticketDetailClose.addEventListener('click', closeTicketDetailModal)
+}
+
+if(ticketDetailEdit){
+   ticketDetailEdit.addEventListener('click', () => {
+      const tickets = getStoredTickets()
+      const ticketIndex = tickets.findIndex((entry) => Number(entry.ticketId) === Number(activeTicketId))
+      if(ticketIndex === -1) return
+
+      tickets[ticketIndex] = {
+         ...tickets[ticketIndex],
+         status: TICKET_STATUS_IN_PROGRESS
+      }
+      saveStoredTickets(tickets)
+
+      const ticket = tickets[ticketIndex]
+      if(!ticket) return
+
+      editingTicketId = ticket.ticketId
+      setTicketFormMode(true)
+      fillTicketFormForEdit(ticket)
+      closeTicketDetailModal()
+      openTicketModal()
+   })
+}
+
+if(ticketDetailComplete){
+   ticketDetailComplete.addEventListener('click', () => {
+      const tickets = getStoredTickets()
+      const ticketIndex = tickets.findIndex((entry) => Number(entry.ticketId) === Number(activeTicketId))
+      if(ticketIndex === -1) return
+
+      tickets[ticketIndex] = {
+         ...tickets[ticketIndex],
+         status: TICKET_STATUS_DONE
+      }
+
+      saveStoredTickets(tickets)
+      closeTicketDetailModal()
+      if(boardViewActive){
+         renderTicketBoard()
+      }
+   })
+}
+
 document.addEventListener('keydown', (event) => {
    if(event.key !== 'Escape') return
 
@@ -882,6 +1202,10 @@ document.addEventListener('keydown', (event) => {
 
    if(ticketModal?.classList.contains('show-ticket-modal')){
       closeTicketModal()
+   }
+
+   if(ticketDetailModal?.classList.contains('show-ticket-detail-modal')){
+      closeTicketDetailModal()
    }
 })
 
@@ -957,8 +1281,7 @@ if(ticketForm){
       const phoneCountryCode = formData.get('phoneCountryCode')?.toString() || '+49'
       const phoneNumber = formData.get('phoneNumber')?.toString().trim() || ''
 
-      const newTicket = {
-         ticketId: nextTicketId,
+      const baseTicketData = {
          createdAt: now.toISOString(),
          createdDate: now.toLocaleDateString('de-DE'),
          createdTime: now.toLocaleTimeString('de-DE', {
@@ -982,21 +1305,54 @@ if(ticketForm){
          assignment: formData.get('assignment')?.toString() || 'egal'
       }
 
-      storedTickets.push(newTicket)
+      if(editingTicketId){
+         const ticketIndex = storedTickets.findIndex((ticket) => Number(ticket.ticketId) === Number(editingTicketId))
+
+         if(ticketIndex !== -1){
+            storedTickets[ticketIndex] = {
+               ...storedTickets[ticketIndex],
+               ...baseTicketData,
+               ticketId: storedTickets[ticketIndex].ticketId,
+               createdAt: storedTickets[ticketIndex].createdAt,
+               createdDate: storedTickets[ticketIndex].createdDate,
+               createdTime: storedTickets[ticketIndex].createdTime,
+               status: storedTickets[ticketIndex].status || TICKET_STATUS_OPEN,
+               updatedAt: now.toISOString()
+            }
+         }
+      }
+      else{
+         storedTickets.push({
+            ticketId: nextTicketId,
+            ...baseTicketData,
+            status: TICKET_STATUS_OPEN
+         })
+      }
+
       saveStoredTickets(storedTickets)
 
       if(ticketMessage){
-         ticketMessage.textContent = `Ticket #${nextTicketId} erfolgreich erstellt.`
+         ticketMessage.textContent = editingTicketId
+            ? `Ticket #${editingTicketId} erfolgreich aktualisiert.`
+            : `Ticket #${nextTicketId} erfolgreich erstellt.`
          ticketMessage.classList.add('ticket-modal__message--success')
       }
 
       ticketForm.reset()
       ticketForm.querySelectorAll('[maxlength]').forEach(syncLengthCounter)
+      editingTicketId = null
+      setTicketFormMode(false)
       closeTicketModal()
+
+      if(boardViewActive){
+         renderTicketBoard()
+      }
    })
 }
 
 populateCountryCodeSelect()
 initializeLengthCounters()
 initializeDeadlineInput()
+setTicketFormMode(false)
+showHomeView()
 updateAuthButton()
