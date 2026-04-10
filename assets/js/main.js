@@ -599,6 +599,10 @@ const renderColumn = (columnElement, tickets) => {
 }
 
 const renderTicketBoard = () => {
+   if(!currentUser?.isAdmin || !boardViewActive){
+      return
+   }
+
    const storedTickets = sortNewestFirst(getStoredTickets())
 
    const openTickets = storedTickets.filter((ticket) => ticket.status === TICKET_STATUS_OPEN)
@@ -667,6 +671,10 @@ const fillTicketDetail = (ticket) => {
 }
 
 const openTicketDetailModal = (ticketId) => {
+   if(!currentUser?.isAdmin || !boardViewActive){
+      return
+   }
+
    const tickets = getStoredTickets()
    const ticket = tickets.find((entry) => Number(entry.ticketId) === Number(ticketId))
    if(!ticket || !ticketDetailModal) return
@@ -1153,6 +1161,8 @@ if(ticketDetailClose){
 
 if(ticketDetailEdit){
    ticketDetailEdit.addEventListener('click', () => {
+   if(!currentUser?.isAdmin || !boardViewActive) return
+
       const tickets = getStoredTickets()
       const ticketIndex = tickets.findIndex((entry) => Number(entry.ticketId) === Number(activeTicketId))
       if(ticketIndex === -1) return
@@ -1176,6 +1186,8 @@ if(ticketDetailEdit){
 
 if(ticketDetailComplete){
    ticketDetailComplete.addEventListener('click', () => {
+   if(!currentUser?.isAdmin || !boardViewActive) return
+
       const tickets = getStoredTickets()
       const ticketIndex = tickets.findIndex((entry) => Number(entry.ticketId) === Number(activeTicketId))
       if(ticketIndex === -1) return
