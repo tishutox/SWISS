@@ -35,6 +35,8 @@ const loginOpen = document.getElementById('nav-login'),
 
 let currentUser = null
 
+const TICKETS_STORAGE_KEY = 'swiss_tickets'
+
 const users = [
    {
       firstName: 'Armand Patrick',
@@ -59,6 +61,33 @@ const updateAuthButton = () => {
    if(!label) return
 
    label.textContent = currentUser ? 'Abmelden' : 'Anmelden'
+}
+
+const getStoredTickets = () => {
+   try{
+      const rawTickets = localStorage.getItem(TICKETS_STORAGE_KEY)
+      if(!rawTickets) return []
+
+      const parsedTickets = JSON.parse(rawTickets)
+      return Array.isArray(parsedTickets) ? parsedTickets : []
+   }
+   catch{
+      return []
+   }
+}
+
+const saveStoredTickets = (tickets) => {
+   localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets))
+}
+
+const getNextTicketId = (tickets) => {
+   const maxId = tickets.reduce((maxValue, ticket) => {
+      const numericId = Number(ticket?.ticketId)
+      if(Number.isNaN(numericId)) return maxValue
+      return Math.max(maxValue, numericId)
+   }, 0)
+
+   return maxId + 1
 }
 
 const syncBodyModalState = () => {
@@ -229,8 +258,38 @@ if(ticketForm){
          return
       }
 
+      const storedTickets = getStoredTickets()
+      const now = new Date()
+      const formData = new FormData(ticketForm)
+      const nextTicketId = getNextTicketId(storedTickets)
+
+      const newTicket = {
+         ticketId: nextTicketId,
+         createdAt: now.toISOString(),
+         createdDate: now.toLocaleDateString('de-DE'),
+         createdTime: now.toLocaleTimeString('de-DE', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+         }),
+         firstName: formData.get('firstName')?.toString().trim() || '',
+         lastName: formData.get('lastName')?.toString().trim() || '',
+         nickName: formData.get('nickName')?.toString().trim() || '',
+         email: formData.get('email')?.toString().trim() || '',
+         phoneNumber: formData.get('phoneNumber')?.toString().trim() || '',
+         discord: formData.get('discord')?.toString().trim() || '',
+         module: formData.get('module')?.toString() || 'kein-modul',
+         title: formData.get('title')?.toString().trim() || '',
+         message: formData.get('message')?.toString().trim() || '',
+         priority: formData.get('priority')?.toString() || '',
+         assignment: formData.get('assignment')?.toString() || 'egal'
+      }
+
+      storedTickets.push(newTicket)
+      saveStoredTickets(storedTickets)
+
       if(ticketMessage){
-         ticketMessage.textContent = 'Ticket erfolgreich erstellt.'
+         ticketMessage.textContent = `Ticket #${nextTicketId} erfolgreich erstellt.`
          ticketMessage.classList.add('ticket-modal__message--success')
       }
 
