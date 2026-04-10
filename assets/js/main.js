@@ -22,6 +22,7 @@ const loginOpen = document.getElementById('nav-login'),
    ticketOpen = document.getElementById('nav-new-ticket'),
    allTicketsItem = document.getElementById('nav-all-tickets-item'),
    allTicketsLink = document.getElementById('nav-all-tickets'),
+   authSessionNote = document.getElementById('auth-session-note'),
    homeContent = document.getElementById('home-content'),
    adminTicketBoard = document.getElementById('admin-ticket-board'),
    boardPullIndicator = document.getElementById('board-pull-indicator'),
@@ -73,7 +74,7 @@ const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON
 
 const TICKET_STATUS_OPEN = 'offen'
 const TICKET_STATUS_IN_PROGRESS = 'in-bearbeitung'
-const TICKET_STATUS_DONE = 'erledigt'
+const TICKET_STATUS_DONE = 'geschlossen'
 const AUTH_SESSION_STORAGE_KEY = 'swiss_auth_session'
 const AUTH_SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -571,7 +572,10 @@ const enforceSessionExpiry = () => {
    const session = getStoredAuthSession()
    if(!session || isStoredSessionExpired(session)){
       logoutCurrentUser()
+      return
    }
+
+   updateAuthSessionNote()
 }
 
 const updateAuthButton = () => {
@@ -593,6 +597,31 @@ const updateAuthButton = () => {
          adminTicketBoard?.setAttribute('hidden', 'true')
       }
    }
+
+   updateAuthSessionNote()
+}
+
+const updateAuthSessionNote = () => {
+   if(!authSessionNote) return
+
+   if(!currentUser?.isAdmin){
+      authSessionNote.hidden = true
+      authSessionNote.textContent = ''
+      return
+   }
+
+   const session = getStoredAuthSession()
+   if(!session){
+      authSessionNote.hidden = true
+      authSessionNote.textContent = ''
+      return
+   }
+
+   const remainingMs = Math.max(0, AUTH_SESSION_MAX_AGE_MS - (Date.now() - session.issuedAt))
+   const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000))
+
+   authSessionNote.hidden = false
+   authSessionNote.textContent = `Admin-Session läuft in ${remainingDays} Tag${remainingDays === 1 ? '' : 'en'} ab.`
 }
 
 const setTicketFormMode = (isEditMode) => {
@@ -612,7 +641,8 @@ const setTicketFormMode = (isEditMode) => {
 }
 
 const normalizeTicket = (ticket) => {
-   const status = ticket?.status || TICKET_STATUS_OPEN
+   const rawStatus = ticket?.status || TICKET_STATUS_OPEN
+   const status = rawStatus === 'erledigt' ? TICKET_STATUS_DONE : rawStatus
    return {
       ...ticket,
       status
@@ -670,6 +700,14 @@ const renderColumn = (columnElement, tickets) => {
       card.className = 'ticket-card'
       card.dataset.ticketId = String(ticket.ticketId)
 
+      const title = document.createElement('span')
+      title.className = 'ticket-card__title'
+      title.textContent = truncateTitle(ticket.title || 'Ohne Titel')
+
+      const nickname = document.createElement('span')
+      nickname.className = 'ticket-card__nickname'
+      nickname.textContent = ticket.nickName || '-'
+
       const meta = document.createElement('span')
       meta.className = 'ticket-card__meta'
 
@@ -681,12 +719,8 @@ const renderColumn = (columnElement, tickets) => {
       assignment.className = 'ticket-card__assignment'
       assignment.textContent = getAssignmentLabel(ticket)
 
-      const title = document.createElement('span')
-      title.className = 'ticket-card__title'
-      title.textContent = truncateTitle(ticket.title || 'Ohne Titel')
-
-      meta.append(marker, assignment, title)
-      card.append(meta)
+      meta.append(marker, assignment)
+      card.append(title, nickname, meta)
       columnElement.append(card)
    })
 }
@@ -811,9 +845,15 @@ const initializeBoardPullToRefresh = () => {
 const fillTicketDetail = (ticket) => {
    if(!ticketDetailContent) return
 
+   const statusLabelMap = {
+      [TICKET_STATUS_OPEN]: 'OFFEN',
+      [TICKET_STATUS_IN_PROGRESS]: 'IN BEARBEITUNG',
+      [TICKET_STATUS_DONE]: 'GESCHLOSSEN'
+   }
+
    const detailRows = [
       ['Ticket-ID', `#${ticket.ticketId || '-'}`],
-      ['Status', ticket.status || TICKET_STATUS_OPEN],
+      ['Status', statusLabelMap[ticket.status] || String(ticket.status || TICKET_STATUS_OPEN).toUpperCase()],
       ['Erstellt am', `${ticket.createdDate || '-'} ${ticket.createdTime || ''}`.trim()],
       ['Vorname', ticket.firstName || '-'],
       ['Nachname', ticket.lastName || '-'],
@@ -848,6 +888,16 @@ const fillTicketDetail = (ticket) => {
    })
 }
 
+const updateTicketDetailActionsVisibility = (status) => {
+   if(ticketDetailEdit){
+      ticketDetailEdit.hidden = status !== TICKET_STATUS_OPEN
+   }
+
+   if(ticketDetailComplete){
+      ticketDetailComplete.hidden = status === TICKET_STATUS_DONE
+   }
+}
+
 const openTicketDetailModal = (ticketId) => {
    if(!currentUser?.isAdmin || !boardViewActive){
       return
@@ -859,6 +909,7 @@ const openTicketDetailModal = (ticketId) => {
 
    activeTicketId = Number(ticketId)
    fillTicketDetail(ticket)
+   updateTicketDetailActionsVisibility(ticket.status)
    ticketDetailModal.classList.add('show-ticket-detail-modal')
    ticketDetailModal.setAttribute('aria-hidden', 'false')
    syncBodyModalState()
@@ -1376,7 +1427,7 @@ if(ticketOpen){
 if(allTicketsLink){
    allTicketsLink.addEventListener('click', async (event) => {
       event.preventDefault()
-   enforceSessionExpiry()
+      enforceSessionExpiry()
       if(!currentUser?.isAdmin) return
 
       if(navMenu){
@@ -1438,7 +1489,7 @@ if(ticketDetailClose){
 
 if(ticketDetailEdit){
    ticketDetailEdit.addEventListener('click', async () => {
-   enforceSessionExpiry()
+      enforceSessionExpiry()
       if(!currentUser?.isAdmin || !boardViewActive) return
 
       await loadTicketsFromDatabase()
@@ -1446,6 +1497,10 @@ if(ticketDetailEdit){
       const tickets = getStoredTickets()
       const ticketIndex = tickets.findIndex((entry) => Number(entry.ticketId) === Number(activeTicketId))
       if(ticketIndex === -1) return
+
+      if(tickets[ticketIndex].status !== TICKET_STATUS_OPEN){
+         return
+      }
 
       const statusUpdated = await updateTicketInDatabase(tickets[ticketIndex].ticketId, {
          status: TICKET_STATUS_IN_PROGRESS,
@@ -1454,21 +1509,19 @@ if(ticketDetailEdit){
       if(!statusUpdated) return
 
       await loadTicketsFromDatabase()
+      await renderTicketBoard()
 
       const ticket = getStoredTickets().find((entry) => Number(entry.ticketId) === Number(activeTicketId))
       if(!ticket) return
 
-      editingTicketId = ticket.ticketId
-      setTicketFormMode(true)
-      fillTicketFormForEdit(ticket)
-      closeTicketDetailModal()
-      openTicketModal()
+      fillTicketDetail(ticket)
+      updateTicketDetailActionsVisibility(ticket.status)
    })
 }
 
 if(ticketDetailComplete){
    ticketDetailComplete.addEventListener('click', async () => {
-   enforceSessionExpiry()
+      enforceSessionExpiry()
       if(!currentUser?.isAdmin || !boardViewActive) return
 
       await loadTicketsFromDatabase()
@@ -1477,6 +1530,10 @@ if(ticketDetailComplete){
       const ticketIndex = tickets.findIndex((entry) => Number(entry.ticketId) === Number(activeTicketId))
       if(ticketIndex === -1) return
 
+      if(tickets[ticketIndex].status === TICKET_STATUS_DONE){
+         return
+      }
+
       const doneUpdated = await updateTicketInDatabase(tickets[ticketIndex].ticketId, {
          status: TICKET_STATUS_DONE,
          updatedAt: new Date().toISOString()
@@ -1484,10 +1541,13 @@ if(ticketDetailComplete){
       if(!doneUpdated) return
 
       await loadTicketsFromDatabase()
-      closeTicketDetailModal()
-      if(boardViewActive){
-         await renderTicketBoard()
-      }
+      await renderTicketBoard()
+
+      const ticket = getStoredTickets().find((entry) => Number(entry.ticketId) === Number(activeTicketId))
+      if(!ticket) return
+
+      fillTicketDetail(ticket)
+      updateTicketDetailActionsVisibility(ticket.status)
    })
 }
 
