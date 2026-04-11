@@ -72,6 +72,7 @@ let isPullingBoard = false
 let boardPullStartY = 0
 let boardPullDistance = 0
 let isBoardRefreshing = false
+let authSessionNoteHideTimeoutId = null
 
 const SUPABASE_URL = 'https://vuqrjvnitgmigykrkpfj.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1cXJqdm5pdGdtaWd5a3JrcGZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzI4MzUsImV4cCI6MjA4ODkwODgzNX0.necblqCSqzKv2shs9SuO6Qr3ys-TU4DS4tYNUKHAvvk'
@@ -82,6 +83,7 @@ const TICKET_STATUS_IN_PROGRESS = 'in-bearbeitung'
 const TICKET_STATUS_DONE = 'geschlossen'
 const AUTH_SESSION_STORAGE_KEY = 'swiss_auth_session'
 const AUTH_SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
+const AUTH_SESSION_NOTE_VISIBLE_MS = 5 * 1000
 const EMAIL_VERIFICATION_COOLDOWN_MS = 60 * 1000
 const EMAIL_VERIFICATION_CODE_PATTERN = /^\d{6}$/
 const EMAIL_VERIFICATION_STORAGE_PREFIX = 'swiss_ticket_email_cooldown_'
@@ -594,7 +596,7 @@ const enforceSessionExpiry = () => {
       return
    }
 
-   updateAuthSessionNote()
+   updateAuthSessionNote(false)
 }
 
 const updateAuthButton = () => {
@@ -621,8 +623,13 @@ const updateAuthButton = () => {
    enforceAdminDashboardVisibility()
 }
 
-const updateAuthSessionNote = () => {
+const updateAuthSessionNote = (showTemporarily = true) => {
    if(!authSessionNote) return
+
+   if(authSessionNoteHideTimeoutId){
+      clearTimeout(authSessionNoteHideTimeoutId)
+      authSessionNoteHideTimeoutId = null
+   }
 
    if(!currentUser?.isAdmin){
       authSessionNote.hidden = true
@@ -640,8 +647,17 @@ const updateAuthSessionNote = () => {
    const remainingMs = Math.max(0, AUTH_SESSION_MAX_AGE_MS - (Date.now() - session.issuedAt))
    const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000))
 
-   authSessionNote.hidden = false
    authSessionNote.textContent = `Admin-Session läuft in ${remainingDays} Tag${remainingDays === 1 ? '' : 'en'} ab.`
+
+   if(!showTemporarily) return
+
+   authSessionNote.hidden = false
+   authSessionNoteHideTimeoutId = setTimeout(() => {
+      if(authSessionNote){
+         authSessionNote.hidden = true
+      }
+      authSessionNoteHideTimeoutId = null
+   }, AUTH_SESSION_NOTE_VISIBLE_MS)
 }
 
 const setTicketFormMode = (isEditMode) => {
