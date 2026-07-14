@@ -1,125 +1,183 @@
-# SWISS Ticket
+# 🎮 Pixel Game Developer Portfolio
 
-SWISS Ticket ist ein webbasiertes Ticket-Portal mit:
+Ein schlichtes, aber ansprechendes Portfolio für werdende Game Developer im Pixel-Art-Stil. Dieses Portfolio zeigt deine Fähigkeiten, Projekte und Persönlichkeit auf eine kreative und nostalgische Weise.
 
-- Ticket-Erstellung durch Studierende
-- Admin-Login und Ticket-Board (Kanban-Ansicht)
-- E-Mail-Verifizierung per 6-stelligem Code (@tha.de)
-- Supabase als Datenbank und Backend (inkl. Edge Function)
+## 📸 Vorschau
 
-## Aktueller Funktionsumfang
+![Portfolio Preview](https://img.shields.io/badge/Status-Online-brightgreen) [Live Demo](#) (Ersetze mit deiner GitHub Pages URL)
 
-### Navigation und UI
+## ✨ Features
 
-- Responsive Navigation mit Mobile-Menue
-- Modale Dialoge fuer:
-	- Anmeldung
-	- Neues Ticket / Ticket bearbeiten
-	- Ticketdetails
-- Zeichenzaehler auf Feldern mit `maxlength`
-- Deadline-Eingabe mit Kalenderauswahl und Validierung (TT.MM.JJJJ)
+- **Pixel-Art Design** - Nostalgisches 8-Bit/16-Bit Look & Feel
+- **Responsive Layout** - Optimiert für alle Geräte (Desktop, Tablet, Mobile)
+- **Animierte Elemente** - Smooth Scroll, Hover-Effekte, Partikel-Animationen
+- **Interaktive Navigation** - Einfache Bedienung mit Tastatur und Touch
+- **Skill-Darstellung** - Übersichtliche Anzeige deiner Fähigkeiten
+- **Kontaktsektion** - Links zu GitHub, LinkedIn und E-Mail
+- **Preloader** - Animierter Ladebildschirm
+- **Dark Theme** - Augenfreundliches Design
 
-### Authentifizierung (Client-seitig)
+## 🚀 Schnellstart
 
-- Login mit Nutzername oder E-Mail + Passwort
-- Admin-Session wird in `localStorage` gespeichert
-- Session-Laufzeit: 7 Tage
-- Admin sieht zusaetzlich den Menuepunkt `Alle Tickets`
+### 1. Repository klonen
 
-Hinweis: Der aktuelle Login basiert auf lokal im Frontend hinterlegten Admin-Benutzern.
-
-### Ticket-Workflow
-
-- Neues Ticket erstellen
-- Pflichtfelder inkl. E-Mail-Check auf `@tha.de`
-- E-Mail muss vor Ticket-Erstellung verifiziert sein (nur bei neuem Ticket)
-- Ticketstatus im Board:
-	- Offen
-	- In Bearbeitung
-	- Geschlossen
-- Ticketdetails anzeigen
-- Admin kann Tickets aus `Offen` in `In Bearbeitung` und danach in `Geschlossen` ueberfuehren
-- Mobile Pull-to-Refresh im Admin-Board
-
-### Datenhaltung und Validierung
-
-- Tickets werden aus Supabase geladen und in die App-Struktur gemappt
-- Erstellen/Aktualisieren erfolgt ueber Supabase-Queries
-- Eingaben werden vor Persistenz validiert/sanitized
-- SQL-Musterfilter im Frontend als zusaetzlicher Schutzlayer
-
-## Projektstruktur
-
-```text
-.
-|- index.html
-|- README.md
-|- assets/
-|  |- css/
-|  |  |- styles.css
-|  |- img/
-|  |- js/
-|  |  |- main.js
-|  |- scss/
-|     |- styles.scss
-|     |- base/
-|     |- components/
-|     |- config/
-|     |- layout/
-|- supabase/
-	 |- functions/
-	 |  |- ticket-email-code/
-	 |     |- index.ts
-	 |- migrations/
-			|- 20260410000000_ticket_email_codes.sql
+```bash
+git clone https://github.com/tishutox/SWISS.git
+cd SWISS
 ```
 
-## Supabase Edge Function: ticket-email-code
+### 2. Persönliche Daten anpassen
 
-Datei: `supabase/functions/ticket-email-code/index.ts`
+Öffne die Datei `index.html` und passe folgende Platzhalter an:
 
-Die Function stellt zwei Aktionen bereit:
+- **Name**: Suche nach `MAX MUSTERMANN` und ersetze mit deinem Namen
+- **Geburtsdatum**: Suche nach `01. Januar 2000` 
+- **GitHub Link**: Suche nach `https://github.com/tishutox` und ersetze mit deinem GitHub-Profil
+- **LinkedIn Link**: Suche nach `https://linkedin.com/in/max-mustermann` und ersetze mit deinem LinkedIn-Profil
+- **E-Mail**: Suche nach `max.mustermann@example.com` und ersetze mit deiner E-Mail
+- **Beschreibung**: Passe den Text in den `<p>`-Tags im About-Bereich an
+- **Skills**: Aktualisiere die Skill-Items im Skills-Bereich
 
-- `send`: erzeugt einen Code und versendet ihn per E-Mail
-- `verify`: prueft den eingegebenen Code
+### 3. Design anpassen (optional)
 
-Regeln laut aktuellem Stand:
+In der Datei `styles.css` kannst du:
 
-- Nur `@tha.de` E-Mails erlaubt
-- Code-Laenge: 6 Ziffern
-- Gueltigkeit: 10 Minuten
-- Cooldown fuer erneutes Senden: 60 Sekunden
-- Max. Fehlversuche: 5
-- Nach erfolgreicher Verifizierung wird der Code geloescht (One-Time-Use)
+- **Farben ändern**: Bearbeite die CSS-Variablen am Anfang der Datei
+- **Schriftarten**: Ändere die Font-Families
+- **Animationen**: Passe die Keyframes und Animation-Dauern an
 
-### Erforderliche Secrets (Supabase)
+### 4. Lokale Vorschau
 
-- `RESEND_API_KEY`
-- `RESEND_FROM_EMAIL`
-- `SUPABASE_URL` (normalerweise automatisch vorhanden)
-- `SUPABASE_SERVICE_ROLE_KEY` (normalerweise automatisch vorhanden)
+Einfach die `index.html` in deinem Browser öffnen oder einen lokalen Server starten:
 
-## Migration
+```bash
+# Mit Python
+python -m http.server 8000
 
-Datei: `supabase/migrations/20260410000000_ticket_email_codes.sql`
+# Mit Node.js (npx)
+npx serve
 
-Erstellt die Tabelle `ticket_email_codes` mit:
+# Mit PHP
+php -S localhost:8000
+```
 
-- `email`, `code`, `expires_at`, `attempts`, `created_at`
-- Index auf `(email, created_at desc)`
-- Row Level Security aktiviert
+Dann öffne [http://localhost:8000](http://localhost:8000) in deinem Browser.
 
-## Lokales Starten
+## 📂 Projektstruktur
 
-Da es sich um ein statisches Frontend handelt:
+```
+SWISS/
+├── index.html          # Haupt-HTML-Datei
+├── styles.css          # Alle Styles und Animationen
+├── script.js           # JavaScript für Interaktivität
+├── .github/
+│   └── workflows/
+│       └── deploy.yml  # GitHub Actions für Deployment
+└── README.md           # Diese Datei
+```
 
-1. Projekt lokal oeffnen
-2. `index.html` im Browser laden
+## 🔧 Deployment
 
-Fuer volle Funktionalitaet (DB + E-Mail-Verifizierung) muss Supabase korrekt konfiguriert sein.
+### GitHub Pages (empfohlen)
 
-## Aktuelle technische Hinweise
+1. Stelle sicher, dass du auf dem `main`-Branch bist
+2. Gehe zu den Repository-Einstellungen auf GitHub
+3. Navigiere zu "Pages" (unter "Settings")
+4. Wähle als Source: `gh-pages` Branch
+5. Speichere die Einstellungen
 
-- Supabase URL und Anon Key sind aktuell im Frontend (`assets/js/main.js`) gesetzt.
-- Admin-Benutzer sind aktuell ebenfalls im Frontend definiert.
-- Fuer Produktion sollten Zugangsdaten/Secrets nicht client-seitig hardcodiert werden.
+Dein Portfolio wird dann unter `https://[dein-username].github.io/SWISS/` verfügbar sein.
+
+### Alternative: Netlify/Vercel
+
+1. Lade dein Projekt auf GitHub hoch
+2. Erstelle ein neues Projekt auf Netlify oder Vercel
+3. Verbinde dein GitHub-Repository
+4. Wähle den `main`-Branch aus
+5. Deploy!
+
+## 🎨 Design-Anpassungen
+
+### Farben ändern
+
+In `styles.css` findest du die CSS-Variablen:
+
+```css
+:root {
+    --primary: #2b2d42;
+    --secondary: #8d99ae;
+    --accent: #ef233c;
+    --accent-secondary: #4cc9f0;
+    /* ... weitere Variablen */
+}
+```
+
+### Pixel-Character anpassen
+
+Der Character im Hero-Bereich besteht aus CSS-Boxen. Du kannst die Farben und Formen in `styles.css` anpassen:
+
+```css
+.character-head {
+    background: var(--pixel-4);
+    /* ... */
+}
+```
+
+### Neue Skills hinzufügen
+
+Füge einfach neue `<div>`-Elemente mit der Klasse `skill-item` im Skills-Bereich hinzu:
+
+```html
+<div class="skill-item" data-skill="NewSkill">
+    <span class="skill-icon">🎮</span>
+    <span class="skill-name">New Skill</span>
+</div>
+```
+
+## 🎮 Easter Eggs
+
+- **Konsole**: Öffne die Browser-Konsole für eine Überraschung!
+- **Tastatur**: Drücke `ESC` um nach oben zu scrollen
+- **Touch**: Wische nach oben/unten für schnelles Scrollen
+
+## 🛠️ Technologien
+
+- **HTML5** - Struktur
+- **CSS3** - Styling, Animationen, Responsive Design
+- **JavaScript (Vanilla)** - Interaktivität, Animationen
+- **Google Fonts** - Press Start 2P (Pixel-Font)
+- **GitHub Actions** - Automatisches Deployment
+
+## 📝 Changelog
+
+### v1.0.0 (2024)
+- Initiales Release
+- Pixel-Art Design
+- Responsive Layout
+- Animationen und Interaktionen
+- GitHub Pages Deployment
+
+## 🤝 Mitwirken
+
+Falls du Verbesserungen vorschlagen möchtest:
+
+1. Forke das Repository
+2. Erstelle einen neuen Branch (`git checkout -b feature/amazing-feature`)
+3. Commite deine Änderungen (`git commit -m 'Add amazing feature'`)
+4. Push zum Branch (`git push origin feature/amazing-feature`)
+5. Öffne einen Pull Request
+
+## 📄 Lizenz
+
+Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) für Details.
+
+## 📞 Kontakt
+
+- **GitHub**: [@tishutox](https://github.com/tishutox)
+- **E-Mail**: [Deine E-Mail hier eintragen]
+
+---
+
+⭐ **Star dieses Repository, wenn es dir gefällt!** ⭐
+
+*Made with ❤️ and Pixel Art*

@@ -1,320 +1,210 @@
 <!DOCTYPE html>
-   <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Max Mustermann | Game Developer Portfolio</title>
+    <meta name="description" content="Portfolio von Max Mustermann - Werdender Game Developer mit Leidenschaft für Pixel-Art und Indie-Spiele">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Pixel Background -->
+    <div class="pixel-background"></div>
+    
+    <!-- Scanlines Overlay -->
+    <div class="scanlines"></div>
 
-      <!--=============== REMIXICONS ===============-->
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
-
-      <!--=============== CSS ===============-->
-      <link rel="stylesheet" href="assets/css/styles.css">
-
-      <title>Responsive navbar - Bedimcode</title>
-   </head>
-   <body>
-      <!--==================== HEADER ====================-->
-      <header class="header" id="header">
-         <nav class="nav container">
-               <a href="https://www.tha.de/Informatik/Wirtschaftsinformatik-Bachelor.html" class="nav__logo" target="_blank" rel="noopener noreferrer">
-                  <img src="assets/img/logo.png" alt="SWISS Ticket logo" class="nav__logo-img">
-               </a>
-
-            <div class="nav__menu" id="nav-menu">
-               <ul class="nav__list">
-                  <li class="nav__item">
-                     <a href="#" class="nav__link" id="nav-new-ticket">
-                        <span>Neues Ticket</span>
-                     </a>
-                  </li>
-
-                  <li class="nav__item" id="nav-all-tickets-item" hidden>
-                     <a href="#" class="nav__link" id="nav-all-tickets">
-                        <span>Alle Tickets</span>
-                     </a>
-                  </li>
-
-                  <li class="nav__item">
-                     <a href="#" class="nav__link" id="nav-login">
-                        <span>Anmelden</span>
-                     </a>
-                  </li>
-               </ul>
-
-               <!-- Close button -->
-               <div class="nav__close" id="nav-close">
-                  <i class="ri-close-large-line"></i>
-               </div>
-
-               <div class="nav__social">
-                  <a href="https://github.com/tishutox/SWISS" target="_blank" class="nav__social-link">
-                     <i class="ri-github-line"></i>
-                  </a>
-                  <a href="https://discord.gg/xGUG987wKw" target="_blank" rel="noopener noreferrer" class="nav__social-link" aria-label="Discord Community">
-                     <i class="ri-discord-line"></i>
-                  </a>
-               </div>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-text">GAME DEV</span>
             </div>
+            <nav class="nav">
+                <a href="#about" class="nav-link">ÜBER MICH</a>
+                <a href="#skills" class="nav-link">SKILLS</a>
+                <a href="#contact" class="nav-link">KONTAKT</a>
+            </nav>
+        </header>
 
-            <!-- Toggle button -->
-            <div class="nav__toggle" id="nav-toggle">
-               <i class="ri-menu-line"></i>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="pixel-character">
+                    <div class="character-head"></div>
+                    <div class="character-body"></div>
+                    <div class="character-arms"></div>
+                    <div class="character-legs"></div>
+                </div>
+                <div class="hero-text">
+                    <h1 class="hero-title">MAX MUSTERMANN</h1>
+                    <p class="hero-subtitle">WERDENDER GAME DEVELOPER</p>
+                    <div class="hero-description">
+                        <span class="typewriter">Leidenschaft für Pixel-Art & Indie-Spiele...</span>
+                    </div>
+                </div>
             </div>
-         </nav>
-      </header>
-
-      <!--==================== MAIN ====================-->
-      <main>
-         <div class="ticket-board__pull-indicator" id="board-pull-indicator" aria-live="polite">
-            <i class="ri-refresh-line"></i>
-            <span>Ziehen zum Aktualisieren</span>
-         </div>
-
-         <p class="auth-session-note container" id="auth-session-note" hidden aria-live="polite"></p>
-
-         <section class="home" id="home-content">
-            <div class="home__container container">
-               <h1 class="home__title">SWISS Ticket Portal</h1>
-               <p class="home__subtitle">Melde dein Anliegen über Neues Ticket. Admins finden die Kanban-Übersicht unter ALLE TICKETS.</p>
+            <div class="scroll-indicator">
+                <span>▼</span>
             </div>
-         </section>
+        </section>
 
-         <section class="ticket-board container" id="admin-ticket-board" hidden>
-            <div class="ticket-board__column">
-               <h3 class="ticket-board__title">OFFEN</h3>
-               <div class="ticket-board__list" id="ticket-column-offen"></div>
+        <!-- About Section -->
+        <section id="about" class="section about-section">
+            <div class="section-header">
+                <h2 class="section-title">ÜBER MICH</h2>
+                <div class="section-divider"></div>
             </div>
-
-            <div class="ticket-board__column">
-               <h3 class="ticket-board__title">IN BEARBEITUNG</h3>
-               <div class="ticket-board__list" id="ticket-column-in-bearbeitung"></div>
+            <div class="about-content">
+                <div class="about-info">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">NAME:</span>
+                            <span class="info-value">Max Mustermann</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">GEBURTSDATUM:</span>
+                            <span class="info-value">01. Januar 2000</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">STANDORT:</span>
+                            <span class="info-value">Deutschland</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">BERUF:</span>
+                            <span class="info-value">Game Developer</span>
+                        </div>
+                    </div>
+                    <div class="about-text">
+                        <p>Hallo! Ich bin Max, ein werdender Game Developer mit einer großen Leidenschaft für Pixel-Art und Indie-Spiele. 
+                        Seit meiner Kindheit faszinieren mich Videospiele und die kreativen Möglichkeiten, die sie bieten.</p>
+                        <p>Ich lerne ständig neue Technologien und Techniken, um meine Fähigkeiten als Game Developer zu verbessern. 
+                        Mein Ziel ist es, eines Tages meine eigenen Spiele zu veröffentlichen und die Welt mit meinen Kreationen zu bereichern.</p>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <div class="pixel-game-boy"></div>
+                </div>
             </div>
+        </section>
 
-            <div class="ticket-board__column">
-               <h3 class="ticket-board__title">GESCHLOSSEN</h3>
-               <div class="ticket-board__list" id="ticket-column-erledigt"></div>
+        <!-- Skills Section -->
+        <section id="skills" class="section skills-section">
+            <div class="section-header">
+                <h2 class="section-title">MEINE SKILLS</h2>
+                <div class="section-divider"></div>
             </div>
-         </section>
-      </main>
-
-      <div class="ticket-detail-modal" id="ticket-detail-modal" aria-hidden="true">
-         <div class="ticket-detail-modal__backdrop" data-ticket-detail-close></div>
-
-         <section class="ticket-detail-modal__panel" role="dialog" aria-modal="true" aria-labelledby="ticket-detail-title">
-            <button type="button" class="ticket-detail-modal__close" id="ticket-detail-close" aria-label="Ticketdetails schließen">
-               <i class="ri-close-large-line"></i>
-            </button>
-
-            <h2 class="ticket-detail-modal__title" id="ticket-detail-title">TICKET DETAILS</h2>
-            <div class="ticket-detail-modal__content" id="ticket-detail-content"></div>
-
-            <div class="ticket-detail-modal__actions">
-               <button type="button" class="ticket-detail-modal__button" id="ticket-detail-edit">Bearbeiten</button>
-               <button type="button" class="ticket-detail-modal__button ticket-detail-modal__button--primary" id="ticket-detail-complete">Abschließen</button>
+            <div class="skills-container">
+                <div class="skill-category">
+                    <h3 class="category-title">ENGINES & TOOLS</h3>
+                    <div class="skills-grid">
+                        <div class="skill-item" data-skill="Unity">
+                            <span class="skill-icon">🎮</span>
+                            <span class="skill-name">Unity</span>
+                        </div>
+                        <div class="skill-item" data-skill="Unreal">
+                            <span class="skill-icon">🎮</span>
+                            <span class="skill-name">Unreal</span>
+                        </div>
+                        <div class="skill-item" data-skill="Blender">
+                            <span class="skill-icon">🎨</span>
+                            <span class="skill-name">Blender</span>
+                        </div>
+                        <div class="skill-item" data-skill="Aseprite">
+                            <span class="skill-icon">🎨</span>
+                            <span class="skill-name">Aseprite</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">PROGRAMMIERUNG</h3>
+                    <div class="skills-grid">
+                        <div class="skill-item" data-skill="C#">
+                            <span class="skill-icon">💻</span>
+                            <span class="skill-name">C#</span>
+                        </div>
+                        <div class="skill-item" data-skill="C++">
+                            <span class="skill-icon">💻</span>
+                            <span class="skill-name">C++</span>
+                        </div>
+                        <div class="skill-item" data-skill="Python">
+                            <span class="skill-icon">🐍</span>
+                            <span class="skill-name">Python</span>
+                        </div>
+                        <div class="skill-item" data-skill="JavaScript">
+                            <span class="skill-icon">🌐</span>
+                            <span class="skill-name">JavaScript</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">DESIGN</h3>
+                    <div class="skills-grid">
+                        <div class="skill-item" data-skill="Pixel Art">
+                            <span class="skill-icon">✏️</span>
+                            <span class="skill-name">Pixel Art</span>
+                        </div>
+                        <div class="skill-item" data-skill="Game Design">
+                            <span class="skill-icon">🎲</span>
+                            <span class="skill-name">Game Design</span>
+                        </div>
+                        <div class="skill-item" data-skill="UI/UX">
+                            <span class="skill-icon">🖥️</span>
+                            <span class="skill-name">UI/UX</span>
+                        </div>
+                        <div class="skill-item" data-skill="Animation">
+                            <span class="skill-icon">🎬</span>
+                            <span class="skill-name">Animation</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-         </section>
-      </div>
+        </section>
 
-      <!--==================== LOGIN MODAL ====================-->
-      <div class="auth-modal" id="auth-modal" aria-hidden="true">
-         <div class="auth-modal__backdrop" data-auth-close></div>
+        <!-- Contact Section -->
+        <section id="contact" class="section contact-section">
+            <div class="section-header">
+                <h2 class="section-title">KONTAKT</h2>
+                <div class="section-divider"></div>
+            </div>
+            <div class="contact-content">
+                <p class="contact-intro">Du möchtest mit mir in Kontakt treten? Hier findest du meine Links!</p>
+                <div class="social-links">
+                    <a href="https://github.com/tishutox" target="_blank" rel="noopener noreferrer" class="social-link github-link">
+                        <span class="social-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </span>
+                        <span class="social-text">GitHub</span>
+                    </a>
+                    <a href="https://linkedin.com/in/max-mustermann" target="_blank" rel="noopener noreferrer" class="social-link linkedin-link">
+                        <span class="social-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </span>
+                        <span class="social-text">LinkedIn</span>
+                    </a>
+                </div>
+                <div class="contact-email">
+                    <span class="email-icon">✉️</span>
+                    <span class="email-text">max.mustermann@example.com</span>
+                </div>
+            </div>
+        </section>
 
-         <section class="auth-modal__panel" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-            <button type="button" class="auth-modal__close" id="auth-close" aria-label="Login schließen">
-               <i class="ri-close-large-line"></i>
-            </button>
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-text">© 2024 MAX MUSTERMANN | GAME DEVELOPER PORTFOLIO</p>
+            <p class="footer-credits">Made with ❤️ and Pixel Art</p>
+        </footer>
+    </div>
 
-            <h2 class="auth-modal__title" id="auth-title">ANMELDEN</h2>
-            <p class="auth-modal__subtitle">Mit Nutzername oder E-Mail und Passwort einloggen.</p>
-
-            <form class="auth-modal__form" id="auth-form" novalidate>
-               <label class="auth-modal__field" for="auth-identifier">Nutzername oder E-Mail</label>
-               <input
-                  class="auth-modal__input"
-                  id="auth-identifier"
-                  name="identifier"
-                  type="text"
-                  autocomplete="username"
-                  required
-               >
-
-               <label class="auth-modal__field" for="auth-password">Passwort</label>
-               <input
-                  class="auth-modal__input"
-                  id="auth-password"
-                  name="password"
-                  type="password"
-                  autocomplete="current-password"
-                  required
-               >
-
-               <p class="auth-modal__message" id="auth-message" aria-live="polite"></p>
-
-               <button type="submit" class="auth-modal__submit">ANMELDEN</button>
-            </form>
-         </section>
-      </div>
-
-      <!--==================== NEW TICKET MODAL ====================-->
-      <div class="ticket-modal" id="ticket-modal" aria-hidden="true">
-         <div class="ticket-modal__backdrop" data-ticket-close></div>
-
-         <section class="ticket-modal__panel" role="dialog" aria-modal="true" aria-labelledby="ticket-title">
-            <button type="button" class="ticket-modal__close" id="ticket-close" aria-label="Ticket-Modal schließen">
-               <i class="ri-close-large-line"></i>
-            </button>
-
-            <h2 class="ticket-modal__title" id="ticket-title">NEUES TICKET</h2>
-            <p class="ticket-modal__subtitle">Bitte alle Pflichtfelder ausfüllen.</p>
-
-            <form class="ticket-modal__form" id="ticket-form" novalidate>
-               <label class="ticket-modal__field" for="ticket-firstname">Vorname*</label>
-               <input class="ticket-modal__input" id="ticket-firstname" name="firstName" type="text" maxlength="30" required>
-               <p class="ticket-modal__counter" data-counter-for="ticket-firstname" aria-live="polite">0/30</p>
-
-               <label class="ticket-modal__field" for="ticket-lastname">Nachname*</label>
-               <input class="ticket-modal__input" id="ticket-lastname" name="lastName" type="text" maxlength="30" required>
-               <p class="ticket-modal__counter" data-counter-for="ticket-lastname" aria-live="polite">0/30</p>
-
-               <label class="ticket-modal__field" for="ticket-nickname">Spitzname*</label>
-               <input class="ticket-modal__input" id="ticket-nickname" name="nickName" type="text" maxlength="15" required>
-               <p class="ticket-modal__counter" data-counter-for="ticket-nickname" aria-live="polite">0/15</p>
-
-               <label class="ticket-modal__field" for="ticket-email">E-Mail (@tha.de)*</label>
-               <input
-                  class="ticket-modal__input"
-                  id="ticket-email"
-                  name="email"
-                  type="email"
-                  inputmode="email"
-                  pattern="^[^\s@]+@tha\.de$"
-                  required
-               >
-
-               <div class="ticket-modal__verification" id="ticket-email-verification">
-                  <p class="ticket-modal__verification-title">E-Mail-Verifizierung gegen Spam</p>
-                  <div class="ticket-modal__verification-row">
-                     <button type="button" class="ticket-modal__verification-button" id="ticket-send-code">Code senden</button>
-                     <input
-                        class="ticket-modal__input ticket-modal__verification-code"
-                        id="ticket-verification-code"
-                        name="verificationCode"
-                        type="text"
-                        inputmode="numeric"
-                        autocomplete="one-time-code"
-                        placeholder="6-stelliger Code"
-                        pattern="^[0-9]{6}$"
-                        maxlength="6"
-                     >
-                     <button type="button" class="ticket-modal__verification-button" id="ticket-verify-code">Code bestätigen</button>
-                  </div>
-                  <p class="ticket-modal__verification-message" id="ticket-verification-message" aria-live="polite"></p>
-               </div>
-
-               <label class="ticket-modal__field" for="ticket-number">Nummer (optional)</label>
-               <div class="ticket-modal__phone-row">
-                  <select class="ticket-modal__input ticket-modal__country-code" id="ticket-country-code" name="phoneCountryCode" aria-label="Ländervorwahl">
-                     <option value="+49" selected>Deutschland (+49)</option>
-                  </select>
-                  <input class="ticket-modal__input" id="ticket-number" name="phoneNumber" type="tel" inputmode="tel">
-               </div>
-
-               <label class="ticket-modal__field" for="ticket-discord">Discord-Username (optional)</label>
-               <input class="ticket-modal__input" id="ticket-discord" name="discord" type="text">
-
-               <label class="ticket-modal__field" for="ticket-module">Modul (optional)</label>
-               <select class="ticket-modal__input" id="ticket-module" name="module">
-                  <option value="kein-modul" selected>kein Modul</option>
-                  <option value="lineare-algebra-finanzmathematik-1">Lineare Algebra &amp; Finanzmathematik (1)</option>
-                  <option value="betriebswirtschaft-1">Betriebswirtschaft (1)</option>
-                  <option value="einfuehrung-programmierung-1">Einführung in die Programmierung (1)</option>
-                  <option value="grundlagen-wirtschaftsinformatik-1">Grundlagen der Wirtschaftsinformatik (1)</option>
-                  <option value="fremdsprache-1">Fremdsprache (1)</option>
-                  <option value="analysis-2">Analysis (2)</option>
-                  <option value="buchfuehrung-bilanzierung-2">Buchführung &amp; Bilanzierung (2)</option>
-                  <option value="programmierung-wirtschaftsinformatik-2">Programmierung in der Wirtschaftsinformatik (2)</option>
-                  <option value="grundlagen-betrieblicher-informationssysteme-2">Grundlagen betrieblicher Informationssysteme (2)</option>
-                  <option value="daten-informationsanalyse-2">Daten- und Informationsanalyse (2)</option>
-                  <option value="produktentwicklung-marketing-3">Produktentwicklung &amp; Marketing (3)</option>
-                  <option value="kosten-leistungsrechnung-consulting-3">Kosten- und Leistungsrechnung &amp; Consulting (3)</option>
-                  <option value="it-management-recht-3">IT-Management &amp; -Recht (3)</option>
-                  <option value="software-engineering-3">Software Engineering (3)</option>
-                  <option value="implementierung-betrieblicher-informationssysteme-3">Implementierung betrieblicher Informationssysteme (3)</option>
-                  <option value="datenbanksysteme-3">Datenbanksysteme (3)</option>
-                  <option value="statistik-4">Statistik (4)</option>
-                  <option value="projekt-4-6">Projekt (4 &amp; 6)</option>
-                  <option value="geschaeftsprozessmodellierung-requirements-engineering-4">Geschäftsprozessmodellierung &amp; Requirements Engineering (4)</option>
-                  <option value="programmierung-betrieblicher-informationssysteme-4">Programmierung betrieblicher Informationssysteme (4)</option>
-                  <option value="fwp-4-6-7">FWP (4, 6 &amp; 7)</option>
-                  <option value="praxisseminar-5">Praxisseminar (5)</option>
-                  <option value="awp-5">AWP (5)</option>
-                  <option value="produktion-logistik-5">Produktion &amp; Logistik (5)</option>
-                  <option value="praktikum-5">Praktikum (5)</option>
-                  <option value="seminar-neue-technologien-6">Seminar Neue Technologien (6)</option>
-                  <option value="finanzwirtschaft-6">Finanzwirtschaft (6)</option>
-                  <option value="bachelorseminar-7">Bachelorseminar (7)</option>
-                  <option value="bachelorarbeit-7">Bachelorarbeit (7)</option>
-               </select>
-
-               <label class="ticket-modal__field" for="ticket-title-input">Titel* (max. 30 Zeichen)</label>
-               <input class="ticket-modal__input" id="ticket-title-input" name="title" type="text" maxlength="30" required>
-               <p class="ticket-modal__counter" data-counter-for="ticket-title-input" aria-live="polite">0/30</p>
-
-               <label class="ticket-modal__field" for="ticket-message">Nachricht* (max. 5000 Zeichen)</label>
-               <textarea class="ticket-modal__input ticket-modal__textarea" id="ticket-message" name="message" maxlength="5000" required></textarea>
-               <p class="ticket-modal__counter" data-counter-for="ticket-message" aria-live="polite">0/5000</p>
-
-               <label class="ticket-modal__field" for="ticket-priority">Dringlichkeit*</label>
-               <select class="ticket-modal__input" id="ticket-priority" name="priority" required>
-                  <option value="" selected disabled>Bitte wählen</option>
-                  <option value="niedrig">Niedrig</option>
-                  <option value="mittel">Mittel</option>
-                  <option value="hoch">Hoch</option>
-               </select>
-
-               <label class="ticket-modal__field" for="ticket-deadline">DEADLINE (optional)</label>
-               <div class="ticket-modal__deadline-row">
-                  <input class="ticket-modal__input" id="ticket-deadline" name="deadline" type="text" inputmode="numeric" placeholder="TT.MM.JJJJ" pattern="^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.([0-9]{4})$" maxlength="10" aria-describedby="ticket-deadline-help">
-                  <button class="ticket-modal__deadline-button" id="ticket-deadline-button" type="button" aria-label="Datum im Kalender auswählen">
-                     <i class="ri-calendar-todo-line"></i>
-                  </button>
-               </div>
-               <div class="ticket-modal__calendar" id="ticket-deadline-calendar" aria-hidden="true">
-                  <div class="ticket-modal__calendar-header">
-                     <button class="ticket-modal__calendar-nav" id="ticket-calendar-prev" type="button" aria-label="Vorheriger Monat">
-                        <i class="ri-arrow-left-s-line"></i>
-                     </button>
-                     <p class="ticket-modal__calendar-title" id="ticket-calendar-title">Monat Jahr</p>
-                     <button class="ticket-modal__calendar-nav" id="ticket-calendar-next" type="button" aria-label="Nächster Monat">
-                        <i class="ri-arrow-right-s-line"></i>
-                     </button>
-                  </div>
-                  <div class="ticket-modal__calendar-weekdays">
-                     <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
-                  </div>
-                  <div class="ticket-modal__calendar-days" id="ticket-calendar-days"></div>
-               </div>
-               <p class="ticket-modal__helper" id="ticket-deadline-help">Format: TT.MM.JJJJ</p>
-               <p class="ticket-modal__counter" data-counter-for="ticket-deadline" aria-live="polite">0/10</p>
-
-               <label class="ticket-modal__field" for="ticket-assignment">Zuweisung</label>
-               <select class="ticket-modal__input" id="ticket-assignment" name="assignment">
-                  <option value="egal" selected>Egal</option>
-                  <option value="armand">Armand</option>
-                  <option value="ibrahim">Ibrahim</option>
-               </select>
-
-               <p class="ticket-modal__message" id="ticket-message-feedback" aria-live="polite"></p>
-
-               <button type="submit" class="ticket-modal__submit">TICKET ERSTELLEN</button>
-            </form>
-         </section>
-      </div>
-      
-      <!--=============== SUPABASE JS ===============-->
-      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-      <!--=============== MAIN JS ===============-->
-      <script src="assets/js/main.js"></script>
-   </body>
+    <script src="script.js"></script>
+</body>
 </html>
