@@ -1,16 +1,19 @@
 /**
- * Pixel Game Developer Portfolio - JavaScript
+ * Pixel Game Developer V-Card Portfolio - JavaScript
  * Adds interactive animations and functionality
  */
 
 // ============================================
 // DOM ELEMENTS
 // ============================================
-const navLinks = document.querySelectorAll('.nav-link');
-const skillItems = document.querySelectorAll('.skill-item');
-const scrollIndicator = document.querySelector('.scroll-indicator');
+const navLinks = document.querySelectorAll('[href^="#"]');
 const socialLinks = document.querySelectorAll('.social-link');
-const typewriterElement = document.querySelector('.typewriter');
+const projectLinks = document.querySelectorAll('.project-link');
+const certificateLinks = document.querySelectorAll('.certificate-link');
+const timelineItems = document.querySelectorAll('.timeline-item');
+const projectCards = document.querySelectorAll('.project-card');
+const certificateCards = document.querySelectorAll('.certificate-card');
+const educationItems = document.querySelectorAll('.education-item');
 
 // ============================================
 // CONFIGURATION
@@ -18,9 +21,10 @@ const typewriterElement = document.querySelector('.typewriter');
 const config = {
     scrollOffset: 80,
     animationDuration: 300,
-    typewriterSpeed: 50, // ms per character
-    particleCount: 20,
-    particleSize: 4
+    particleCount: 15,
+    particleSize: 4,
+    eyeBlinkInterval: 4000,
+    mouthMoveInterval: 3000
 };
 
 // ============================================
@@ -29,12 +33,12 @@ const config = {
 document.addEventListener('DOMContentLoaded', () => {
     initSmoothScroll();
     initScrollAnimations();
-    initSkillAnimations();
+    initHoverEffects();
     initParticles();
-    initTypewriter();
+    initPixelCharacter();
     initActiveNavLink();
-    initParallaxEffects();
     initPreloader();
+    initConsoleEasterEgg();
 });
 
 // ============================================
@@ -56,32 +60,17 @@ function initSmoothScroll() {
             }
         });
     });
-
-    // Scroll indicator click
-    if (scrollIndicator) {
-        scrollIndicator.addEventListener('click', () => {
-            const aboutSection = document.querySelector('#about');
-            if (aboutSection) {
-                const targetPosition = aboutSection.offsetTop - config.scrollOffset;
-                window.scrollTo({
-                    top: targetPosition,
-                    behavior: 'smooth'
-                });
-            }
-        });
-    }
 }
 
 // ============================================
 // SCROLL ANIMATIONS
 // ============================================
 function initScrollAnimations() {
-    const animatedElements = document.querySelectorAll('.section-header, .skill-category, .info-item, .contact-intro');
+    const animatedElements = document.querySelectorAll('.vcard-section, .timeline-item, .project-card, .certificate-card, .education-item');
     
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
                 entry.target.style.opacity = '1';
                 entry.target.style.transform = 'translateY(0)';
             }
@@ -91,36 +80,149 @@ function initScrollAnimations() {
         rootMargin: '0px 0px -50px 0px'
     });
 
-    animatedElements.forEach(el => {
+    animatedElements.forEach((el, index) => {
         el.style.opacity = '0';
         el.style.transform = 'translateY(30px)';
-        el.style.transition = `opacity ${config.animationDuration}ms ease, transform ${config.animationDuration}ms ease`;
+        el.style.transition = `opacity ${config.animationDuration}ms ease ${index * 50}ms, transform ${config.animationDuration}ms ease ${index * 50}ms`;
         observer.observe(el);
     });
 }
 
 // ============================================
-// SKILL ANIMATIONS
+// HOVER EFFECTS
 // ============================================
-function initSkillAnimations() {
-    skillItems.forEach((item, index) => {
-        // Add hover effect
+function initHoverEffects() {
+    // Timeline items
+    timelineItems.forEach(item => {
         item.addEventListener('mouseenter', () => {
-            item.style.transform = 'scale(1.05) translateY(-5px)';
-            const icon = item.querySelector('.skill-icon');
-            if (icon) {
-                icon.style.animation = 'none';
-                icon.offsetHeight; // Trigger reflow
-                icon.style.animation = 'iconBounce 0.5s ease';
+            const marker = item.querySelector('.timeline-marker');
+            if (marker) {
+                marker.style.transform = 'scale(1.2)';
+                marker.style.boxShadow = '0 0 10px rgba(239, 35, 60, 0.8)';
             }
         });
-
+        
         item.addEventListener('mouseleave', () => {
-            item.style.transform = '';
+            const marker = item.querySelector('.timeline-marker');
+            if (marker) {
+                marker.style.transform = '';
+                marker.style.boxShadow = '';
+            }
         });
+    });
 
-        // Add delay for staggered animation
-        item.style.transitionDelay = `${index * 50}ms`;
+    // Project cards
+    projectCards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            const tags = card.querySelectorAll('.project-tag');
+            tags.forEach(tag => {
+                tag.style.background = 'rgba(239, 35, 60, 0.3)';
+                tag.style.borderColor = '#ef233c';
+            });
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            const tags = card.querySelectorAll('.project-tag');
+            tags.forEach(tag => {
+                tag.style.background = '';
+                tag.style.borderColor = '';
+            });
+        });
+    });
+
+    // Social links
+    socialLinks.forEach(link => {
+        link.addEventListener('mouseenter', () => {
+            link.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+        
+        link.addEventListener('mouseleave', () => {
+            link.style.transform = '';
+        });
+    });
+}
+
+// ============================================
+// PIXEL CHARACTER ANIMATIONS
+// ============================================
+function initPixelCharacter() {
+    const leftEye = document.querySelector('.pixel-eye.left-eye');
+    const rightEye = document.querySelector('.pixel-eye.right-eye');
+    const mouth = document.querySelector('.pixel-mouth');
+    const head = document.querySelector('.pixel-head');
+    
+    if (!leftEye || !rightEye || !mouth || !head) return;
+
+    // Eye blink animation
+    function blinkEyes() {
+        leftEye.style.height = '4px';
+        rightEye.style.height = '4px';
+        leftEye.style.borderRadius = '0 0 50% 50% / 0 0 100% 100%';
+        rightEye.style.borderRadius = '0 0 50% 50% / 0 0 100% 100%';
+        
+        setTimeout(() => {
+            leftEye.style.height = '';
+            rightEye.style.height = '';
+            leftEye.style.borderRadius = '';
+            rightEye.style.borderRadius = '';
+        }, 150);
+    }
+
+    // Mouth movement
+    function moveMouth() {
+        mouth.style.height = '12px';
+        mouth.style.borderRadius = '0 0 30% 30% / 0 0 100% 100%';
+        
+        setTimeout(() => {
+            mouth.style.height = '';
+            mouth.style.borderRadius = '';
+        }, 200);
+    }
+
+    // Head tilt
+    function tiltHead() {
+        head.style.transform = 'translateX(-50%) rotate(-2deg)';
+        
+        setTimeout(() => {
+            head.style.transform = 'translateX(-50%) rotate(2deg)';
+            
+            setTimeout(() => {
+                head.style.transform = 'translateX(-50%) rotate(0deg)';
+            }, 200);
+        }, 200);
+    }
+
+    // Random animations
+    setInterval(blinkEyes, config.eyeBlinkInterval);
+    setInterval(moveMouth, config.mouthMoveInterval);
+    setInterval(tiltHead, 8000);
+
+    // Mouse follow for eyes
+    document.addEventListener('mousemove', (e) => {
+        if (!leftEye || !rightEye) return;
+        
+        const rect = head.getBoundingClientRect();
+        const headCenterX = rect.left + rect.width / 2;
+        const headCenterY = rect.top + rect.height / 2;
+        
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        
+        const angle = Math.atan2(mouseY - headCenterY, mouseX - headCenterX);
+        const eyeOffset = 5;
+        
+        const leftEyeElement = leftEye.querySelector('.eye-iris');
+        const rightEyeElement = rightEye.querySelector('.eye-iris');
+        
+        if (leftEyeElement) {
+            leftEyeElement.style.left = `${Math.cos(angle) * eyeOffset + 2}px`;
+            leftEyeElement.style.top = `${Math.sin(angle) * eyeOffset + 1}px`;
+        }
+        
+        if (rightEyeElement) {
+            rightEyeElement.style.left = `${Math.cos(angle) * eyeOffset + 2}px`;
+            rightEyeElement.style.top = `${Math.sin(angle) * eyeOffset + 1}px`;
+        }
     });
 }
 
@@ -186,44 +288,15 @@ function createParticle(container) {
                 opacity: 0;
             }
         }
-        @keyframes iconBounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-        }
     `;
     document.head.appendChild(style);
-}
-
-// ============================================
-// TYPEWRITER EFFECT
-// ============================================
-function initTypewriter() {
-    if (!typewriterElement) return;
-
-    const text = typewriterElement.textContent;
-    typewriterElement.textContent = '';
-    typewriterElement.style.borderRight = '2px solid #ef233c';
-    
-    let i = 0;
-    const typeInterval = setInterval(() => {
-        if (i < text.length) {
-            typewriterElement.textContent += text.charAt(i);
-            i++;
-        } else {
-            clearInterval(typeInterval);
-            // Start blink animation
-            setInterval(() => {
-                typewriterElement.style.borderRight = typewriterElement.style.borderRight === 'none' ? '2px solid #ef233c' : 'none';
-            }, 500);
-        }
-    }, config.typewriterSpeed);
 }
 
 // ============================================
 // ACTIVE NAV LINK
 // ============================================
 function initActiveNavLink() {
-    const sections = document.querySelectorAll('section[id]');
+    const sections = document.querySelectorAll('.vcard-section');
     
     window.addEventListener('scroll', () => {
         let current = '';
@@ -241,33 +314,9 @@ function initActiveNavLink() {
             link.classList.remove('active');
             if (link.getAttribute('href') === `#${current}`) {
                 link.classList.add('active');
-                link.style.color = '#ef233c';
-                link.style.borderColor = '#ef233c';
-            } else {
-                link.style.color = '';
-                link.style.borderColor = '';
             }
         });
     });
-}
-
-// ============================================
-// PARALLAX EFFECTS
-// ============================================
-function initParallaxEffects() {
-    const hero = document.querySelector('.hero');
-    const pixelCharacter = document.querySelector('.pixel-character');
-    
-    if (hero && pixelCharacter) {
-        window.addEventListener('scroll', () => {
-            const scrolled = window.scrollY;
-            const rate = scrolled * 0.3;
-            
-            if (scrolled < window.innerHeight) {
-                pixelCharacter.style.transform = `translateX(-50%) translateY(${rate}px)`;
-            }
-        });
-    }
 }
 
 // ============================================
@@ -279,7 +328,9 @@ function initPreloader() {
     preloader.className = 'preloader';
     preloader.innerHTML = `
         <div class="preloader-content">
-            <div class="preloader-character"></div>
+            <div class="preloader-portrait">
+                <div class="preloader-head"></div>
+            </div>
             <p class="preloader-text">LOADING...</p>
             <div class="preloader-bar">
                 <div class="preloader-progress"></div>
@@ -312,36 +363,43 @@ function initPreloader() {
             align-items: center;
             gap: 20px;
         }
-        .preloader-character {
+        .preloader-portrait {
+            width: 80px;
+            height: 80px;
+            position: relative;
+        }
+        .preloader-head {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
             width: 60px;
             height: 60px;
-            background: #ef233c;
+            background: #f5d5b0;
             border-radius: 50%;
-            position: relative;
             animation: preloaderPulse 1s ease-in-out infinite;
         }
-        .preloader-character::before {
+        .preloader-head::before {
             content: '';
             position: absolute;
             top: -10px;
             left: -10px;
             right: -10px;
             bottom: -10px;
-            border: 4px solid #4cc9f0;
+            border: 4px solid #3a2519;
             border-radius: 50%;
-            animation: preloaderRotate 2s linear infinite;
         }
         .preloader-text {
             font-family: 'Press Start 2P', cursive;
-            font-size: 1rem;
+            font-size: 0.875rem;
             color: #ffffff;
             letter-spacing: 2px;
         }
         .preloader-bar {
             width: 200px;
-            height: 8px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
         }
         .preloader-progress {
@@ -351,12 +409,8 @@ function initPreloader() {
             animation: preloaderProgress 2s ease-in-out forwards;
         }
         @keyframes preloaderPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        @keyframes preloaderRotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.1); }
         }
         @keyframes preloaderProgress {
             from { width: 0%; }
@@ -377,6 +431,34 @@ function initPreloader() {
 }
 
 // ============================================
+// CONSOLE EASTER EGG
+// ============================================
+function initConsoleEasterEgg() {
+    console.log(`
+%c🎮 PIXEL V-CARD PORTFOLIO 🎮
+
+%cWillkommen auf meinem Game Developer Portfolio!
+
+%cDies ist eine V-Card im Pixel-Art-Stil mit:
+• Links: Profilinformationen & Social Links
+• Rechts: Beruflicher Werdegang, Bildung, Zertifikate & Projekte
+• Responsive Design für alle Geräte
+• Animierter Pixel-Character mit Augenbewegungen
+
+%cTechnologien: HTML5, CSS3, JavaScript (Vanilla)
+
+%cBesuche: https://github.com/tishutox/SWISS
+
+`, 
+'font-size: 20px; font-weight: bold; color: #ef233c; text-shadow: 2px 2px 0 #000;',
+'font-size: 14px; color: #4cc9f0;',
+'font-size: 12px; color: #b0b0b0; line-height: 1.6;',
+'font-size: 12px; color: #f39c12;',
+'font-size: 12px; color: #27ae60;'
+);
+}
+
+// ============================================
 // KEYBOARD NAVIGATION
 // ============================================
 document.addEventListener('keydown', (e) => {
@@ -386,6 +468,14 @@ document.addEventListener('keydown', (e) => {
             top: 0,
             behavior: 'smooth'
         });
+    }
+    
+    // Arrow keys for navigation
+    if (e.key === 'ArrowDown') {
+        const nextSection = document.querySelector('.vcard-section:not([style*="opacity: 0"])');
+        if (nextSection) {
+            nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 });
 
@@ -426,43 +516,6 @@ function handleSwipe() {
 }
 
 // ============================================
-// CONSOLE EASTER EGG
-// ============================================
-console.log(`
-%c🎮 PIXEL GAME DEV PORTFOLIO 🎮
-
-%cWillkommen auf meinem Portfolio!
-
-%cDies ist ein Pixel-Art inspiriertes Portfolio für einen werdenden Game Developer.
-Technologien: HTML5, CSS3, JavaScript (Vanilla)
-
-%cMöchtest du den Quellcode sehen?
-Besuche: https://github.com/tishutox/SWISS
-
-`, 
-'font-size: 24px; font-weight: bold; color: #ef233c; text-shadow: 2px 2px 0 #000;',
-'font-size: 16px; color: #4cc9f0;',
-'font-size: 14px; color: #b0b0b0;',
-'font-size: 14px; color: #f39c12;'
-);
-
-// ============================================
-// SERVICE WORKER REGISTRATION (Optional PWA)
-// ============================================
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        // Uncomment to enable PWA functionality
-        // navigator.serviceWorker.register('/sw.js')
-        //     .then(registration => {
-        //         console.log('ServiceWorker registration successful');
-        //     })
-        //     .catch(err => {
-        //         console.log('ServiceWorker registration failed: ', err);
-        //     });
-    });
-}
-
-// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 function debounce(func, wait) {
@@ -477,7 +530,6 @@ function debounce(func, wait) {
     };
 }
 
-// Throttle function for scroll events
 function throttle(func, limit) {
     let inThrottle;
     return function(...args) {
@@ -496,10 +548,10 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         initSmoothScroll,
         initScrollAnimations,
-        initSkillAnimations,
+        initHoverEffects,
+        initPixelCharacter,
         initParticles,
-        initTypewriter,
         initActiveNavLink,
-        initParallaxEffects
+        initPreloader
     };
 }
